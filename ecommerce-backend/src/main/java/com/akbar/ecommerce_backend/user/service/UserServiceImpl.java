@@ -1,5 +1,6 @@
 package com.akbar.ecommerce_backend.user.service;
 
+import com.akbar.ecommerce_backend.exception.EmailAlreadyExistsException;
 import com.akbar.ecommerce_backend.user.dto.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
         String email = requestDTO.getEmail().trim().toLowerCase();
 
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("Email already exists.");
+            throw new EmailAlreadyExistsException("Email already exists.");
         }
 
         UserEntity user= userMapper.toEntity(requestDTO);
