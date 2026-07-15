@@ -1,6 +1,7 @@
 package com.akbar.ecommerce_backend.user.service;
 
 import com.akbar.ecommerce_backend.exception.EmailAlreadyExistsException;
+import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
 import com.akbar.ecommerce_backend.user.dto.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
 
         String email = requestDTO.getEmail().trim().toLowerCase();
 
-        if (userRepository.findByEmail(email).isPresent()) {
+        if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists.");
         }
 
@@ -51,13 +52,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO getUserById(Long id) {
-        return null;
+
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
+
+        return userMapper.toResponseDTO(user);
     }
+
+
+
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
-        return List.of();
+
+        return userRepository.findAll()
+                .stream()
+                .map(userMapper::toResponseDTO)
+                .toList();
     }
+
 
     @Override
     public UserResponseDTO updateUser(Long id, UserRequestDTO requestDTO) {

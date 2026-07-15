@@ -2,10 +2,15 @@ package com.akbar.ecommerce_backend.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,6 +28,41 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(response);
 
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex) {
+
+        ErrorResponse response = new ErrorResponse();
+        Map<String, String> errorsMap = new HashMap<>();
+
+        List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
+
+        for (FieldError error : fieldErrors) {
+            errorsMap.put(error.getField(), error.getDefaultMessage());
+        }
+
+        response.setStatus(HttpStatus.BAD_REQUEST.value());
+        response.setMessage("Validation Failed");
+        response.setTimeStamp(LocalDateTime.now());
+        response.setErrors(errorsMap);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(response);
+
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex){
+
+        ErrorResponse response = new ErrorResponse();
+
+        response.setStatus(HttpStatus.NOT_FOUND.value());
+        response.setMessage(ex.getMessage());
+        response.setTimeStamp(LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(response);
     }
 
 
