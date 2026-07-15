@@ -24,6 +24,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRequestDTO requestDTO){
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.registerUser(requestDTO));
     }
@@ -31,12 +32,14 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers(){
+
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
 
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id){
+
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -48,6 +51,15 @@ public class UserController {
 
         return ResponseEntity.ok(userService.updateUser(id, requestDTO));
 
+    }
+
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id){
+
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 
 
