@@ -2,6 +2,7 @@ package com.akbar.ecommerce_backend.user.controller;
 
 import com.akbar.ecommerce_backend.user.dto.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.UserResponseDTO;
+import com.akbar.ecommerce_backend.user.dto.UserUpdateRequestDTO;
 import com.akbar.ecommerce_backend.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -37,6 +38,16 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id){
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> updateUser
+            (@PathVariable Long id,
+             @Valid @RequestBody UserUpdateRequestDTO requestDTO){
+
+        return ResponseEntity.ok(userService.updateUser(id, requestDTO));
+
     }
 
 

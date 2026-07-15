@@ -4,6 +4,7 @@ import com.akbar.ecommerce_backend.exception.EmailAlreadyExistsException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
 import com.akbar.ecommerce_backend.user.dto.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.UserResponseDTO;
+import com.akbar.ecommerce_backend.user.dto.UserUpdateRequestDTO;
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
 import com.akbar.ecommerce_backend.user.enums.Role;
 import com.akbar.ecommerce_backend.user.enums.UserStatus;
@@ -73,8 +74,18 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserResponseDTO updateUser(Long id, UserRequestDTO requestDTO) {
-        return null;
+    public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO requestDTO) {
+
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
+
+        user.setFirstName(requestDTO.getFirstName());
+        user.setLastName(requestDTO.getLastName());
+        user.setPhoneNumber(requestDTO.getPhoneNumber());
+
+        userRepository.save(user);
+        return userMapper.toResponseDTO(user);
+
     }
 
     @Override
