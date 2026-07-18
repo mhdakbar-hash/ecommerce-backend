@@ -10,6 +10,7 @@ import com.akbar.ecommerce_backend.user.enums.Role;
 import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,10 +21,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper){
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -39,6 +42,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity user= userMapper.toEntity(requestDTO);
 
+        user.setPassword(passwordEncoder.encode(requestDTO.getPassword()));
         user.setEmail(email);
         user.setRole(Role.CUSTOMER);
         user.setStatus(UserStatus.ACTIVE);
