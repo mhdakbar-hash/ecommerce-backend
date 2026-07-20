@@ -1,4 +1,4 @@
-package com.akbar.ecommerce_backend.user.dto;
+package com.akbar.ecommerce_backend.user.dto.user;
 
 import com.akbar.ecommerce_backend.user.enums.Role;
 import com.akbar.ecommerce_backend.user.enums.UserStatus;

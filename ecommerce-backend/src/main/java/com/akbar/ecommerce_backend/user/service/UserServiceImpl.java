@@ -2,9 +2,9 @@ package com.akbar.ecommerce_backend.user.service;
 
 import com.akbar.ecommerce_backend.exception.EmailAlreadyExistsException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
-import com.akbar.ecommerce_backend.user.dto.UserRequestDTO;
-import com.akbar.ecommerce_backend.user.dto.UserResponseDTO;
-import com.akbar.ecommerce_backend.user.dto.UserUpdateRequestDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserRequestDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserUpdateRequestDTO;
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
 import com.akbar.ecommerce_backend.user.enums.Role;
 import com.akbar.ecommerce_backend.user.enums.UserStatus;

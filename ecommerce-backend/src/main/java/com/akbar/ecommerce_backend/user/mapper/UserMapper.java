@@ -1,7 +1,7 @@
 package com.akbar.ecommerce_backend.user.mapper;
 
-import com.akbar.ecommerce_backend.user.dto.UserRequestDTO;
-import com.akbar.ecommerce_backend.user.dto.UserResponseDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserRequestDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
 import org.springframework.stereotype.Component;
 

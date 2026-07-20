@@ -1,8 +1,8 @@
 package com.akbar.ecommerce_backend.user.controller;
 
-import com.akbar.ecommerce_backend.user.dto.UserRequestDTO;
-import com.akbar.ecommerce_backend.user.dto.UserResponseDTO;
-import com.akbar.ecommerce_backend.user.dto.UserUpdateRequestDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserRequestDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserUpdateRequestDTO;
 import com.akbar.ecommerce_backend.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
