@@ -1,5 +1,7 @@
 package com.akbar.ecommerce_backend.config;
 
+import com.akbar.ecommerce_backend.security.CustomAccessDeniedHandler;
+import com.akbar.ecommerce_backend.security.CustomAuthenticationEntryPoint;
 import com.akbar.ecommerce_backend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,13 +23,20 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          UserDetailsService userDetailsService) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            UserDetailsService userDetailsService,
+            CustomAuthenticationEntryPoint authenticationEntryPoint,
+            CustomAccessDeniedHandler accessDeniedHandler) {
 
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.userDetailsService = userDetailsService;
+        this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
 
@@ -44,6 +53,10 @@ public class SecurityConfig {
 
         httpSecurity
                 .csrf(csrf -> csrf.disable())
+
+                .exceptionHandling(exception ->
+                        exception.authenticationEntryPoint(authenticationEntryPoint)
+                                .accessDeniedHandler(accessDeniedHandler))
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -62,7 +75,7 @@ public class SecurityConfig {
                                 "/api/v1/users/{id}").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.DELETE,
-                                "api/v1/users/{id}").hasRole("ADMIN")
+                                "/api/v1/users/{id}").hasRole("ADMIN")
 
                         .anyRequest().authenticated())
 
