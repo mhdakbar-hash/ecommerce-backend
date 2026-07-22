@@ -2,6 +2,7 @@ package com.akbar.ecommerce_backend.user.service;
 
 import com.akbar.ecommerce_backend.exception.EmailAlreadyExistsException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
+import com.akbar.ecommerce_backend.user.dto.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserUpdateRequestDTO;
@@ -10,10 +11,10 @@ import com.akbar.ecommerce_backend.user.enums.Role;
 import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -68,12 +69,30 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public List<UserResponseDTO> getAllUsers() {
+    public PageResponseDTO<UserResponseDTO> getAllUsers(Pageable pageable) {
 
-        return userRepository.findAll()
+        Page<UserEntity> users = userRepository.findAll(pageable);
+
+        return PageResponseDTO.<UserResponseDTO>builder()
+                .content(
+                        users.getContent()
+                                .stream()
+                                .map(userMapper::toResponseDTO)
+                                .toList()
+                )
+                .currentPage(users.getNumber())
+                .pageSize(users.getSize())
+                .totalElements(users.getTotalElements())
+                .totalPages(users.getTotalPages())
+                .first(users.isFirst())
+                .last(users.isLast())
+                .build();
+
+
+        /*return userRepository.findAll()
                 .stream()
                 .map(userMapper::toResponseDTO)
-                .toList();
+                .toList();*/
     }
 
 

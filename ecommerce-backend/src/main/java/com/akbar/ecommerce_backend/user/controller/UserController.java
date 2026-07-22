@@ -1,15 +1,16 @@
 package com.akbar.ecommerce_backend.user.controller;
 
+import com.akbar.ecommerce_backend.user.dto.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserUpdateRequestDTO;
 import com.akbar.ecommerce_backend.user.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -31,9 +32,9 @@ public class UserController {
 
 
     @GetMapping
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers(){
+    public ResponseEntity<PageResponseDTO<UserResponseDTO>> getAllUsers(Pageable pageable){
 
-        return ResponseEntity.ok(userService.getAllUsers());
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
 
