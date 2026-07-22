@@ -1,5 +1,6 @@
 package com.akbar.ecommerce_backend.user.controller;
 
+import com.akbar.ecommerce_backend.user.dto.auth.ChangePasswordRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.auth.LoginRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.auth.LoginResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
@@ -31,4 +32,17 @@ public class AuthController {
 
         return ResponseEntity.ok(authService.getCurrentUser());
     }
+
+
+    @PutMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @Valid @RequestBody ChangePasswordRequestDTO requestDTO){
+
+        authService.changePassword(requestDTO);
+
+        return ResponseEntity.ok("Password changed successfully.");
+
+
+    }
+
 }

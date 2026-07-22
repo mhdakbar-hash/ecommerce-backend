@@ -66,4 +66,22 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler ({
+            PasswordMismatchException.class,
+            InvalidOldPasswordException.class,
+            SamePasswordException.class})
+
+    public ResponseEntity<ErrorResponse> handlePasswordExceptions(RuntimeException exception){
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+
 }
