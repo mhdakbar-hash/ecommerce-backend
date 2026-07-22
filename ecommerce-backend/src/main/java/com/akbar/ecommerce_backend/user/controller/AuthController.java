@@ -2,13 +2,11 @@ package com.akbar.ecommerce_backend.user.controller;
 
 import com.akbar.ecommerce_backend.user.dto.auth.LoginRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.auth.LoginResponseDTO;
+import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -26,5 +24,11 @@ public class AuthController {
 
         return ResponseEntity.ok(authService.login(requestDTO));
 
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> getCurrentUser(){
+
+        return ResponseEntity.ok(authService.getCurrentUser());
     }
 }
