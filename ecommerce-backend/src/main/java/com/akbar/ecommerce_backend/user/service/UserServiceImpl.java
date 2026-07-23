@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -69,24 +71,37 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public PageResponseDTO<UserResponseDTO> getAllUsers(Pageable pageable) {
+    public PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, Pageable pageable) {
 
-        Page<UserEntity> users = userRepository.findAll(pageable);
+        Page<UserEntity> users;
 
-        return PageResponseDTO.<UserResponseDTO>builder()
-                .content(
-                        users.getContent()
-                                .stream()
-                                .map(userMapper::toResponseDTO)
-                                .toList()
-                )
-                .currentPage(users.getNumber())
-                .pageSize(users.getSize())
-                .totalElements(users.getTotalElements())
-                .totalPages(users.getTotalPages())
-                .first(users.isFirst())
-                .last(users.isLast())
-                .build();
+        if (keyword == null || keyword.isBlank()){
+
+            users = userRepository.findAll(pageable);
+
+        }
+
+        else {
+
+            users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneNumberContainingIgnoreCase(
+                    keyword, keyword, keyword, keyword, pageable);
+
+        }
+
+        List<UserResponseDTO> response = users.getContent()
+                .stream()
+                .map(userMapper::toResponseDTO)
+                .toList();
+
+        return new PageResponseDTO<>(
+                response,
+                users.getNumber(),
+                users.getSize(),
+                users.getTotalElements(),
+                users.getTotalPages(),
+                users.isFirst(),
+                users.isLast()
+        );
 
 
         /*return userRepository.findAll()

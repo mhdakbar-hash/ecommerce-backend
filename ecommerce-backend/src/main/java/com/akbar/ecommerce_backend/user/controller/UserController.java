@@ -36,6 +36,8 @@ public class UserController {
     @GetMapping
     public ResponseEntity<PageResponseDTO<UserResponseDTO>> getAllUsers(
 
+            @RequestParam(required = false) String keyword,
+
             @PageableDefault(
                     page = 0,
                     size = 20,
@@ -45,7 +47,7 @@ public class UserController {
 
             Pageable pageable){
 
-        return ResponseEntity.ok(userService.getAllUsers(pageable));
+        return ResponseEntity.ok(userService.getAllUsers(keyword, pageable));
     }
 
 

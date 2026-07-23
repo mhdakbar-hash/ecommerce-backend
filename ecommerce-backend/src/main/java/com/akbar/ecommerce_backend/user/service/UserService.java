@@ -13,7 +13,7 @@ public interface UserService {
 
     UserResponseDTO getUserById(Long id);
 
-    PageResponseDTO<UserResponseDTO> getAllUsers(Pageable pageable);
+    PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, Pageable pageable);
 
     UserResponseDTO updateUser(Long id, UserUpdateRequestDTO requestDTO);
 
