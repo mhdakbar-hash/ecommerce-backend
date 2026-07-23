@@ -91,7 +91,7 @@ public class UserServiceImpl implements UserService {
 
         /*return userRepository.findAll()
                 .stream()
-                .map(userMapper::toResponseDTO)
+                .map(userMapper::toResponseDTO)       //- old code
                 .toList();*/
     }
 

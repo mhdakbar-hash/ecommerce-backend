@@ -1,5 +1,6 @@
 package com.akbar.ecommerce_backend.exception;
 
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -78,6 +79,21 @@ public class GlobalExceptionHandler {
                 exception.getMessage(),
                 LocalDateTime.now(),
                 null);
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(response);
+    }
+
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ErrorResponse> handlePropertyReferenceException(PropertyReferenceException exception){
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid sort field: " + exception.getPropertyName(),
+                LocalDateTime.now(),
+                null
+        );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(response);

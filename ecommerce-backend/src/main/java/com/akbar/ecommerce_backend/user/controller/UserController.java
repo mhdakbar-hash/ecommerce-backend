@@ -7,6 +7,8 @@ import com.akbar.ecommerce_backend.user.dto.user.UserUpdateRequestDTO;
 import com.akbar.ecommerce_backend.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +34,16 @@ public class UserController {
 
 
     @GetMapping
-    public ResponseEntity<PageResponseDTO<UserResponseDTO>> getAllUsers(Pageable pageable){
+    public ResponseEntity<PageResponseDTO<UserResponseDTO>> getAllUsers(
+
+            @PageableDefault(
+                    page = 0,
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            )
+
+            Pageable pageable){
 
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
