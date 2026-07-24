@@ -4,6 +4,7 @@ import com.akbar.ecommerce_backend.user.dto.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserUpdateRequestDTO;
+import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import com.akbar.ecommerce_backend.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,8 @@ public class UserController {
 
             @RequestParam(required = false) String keyword,
 
+            @RequestParam(required = false) UserStatus status,
+
             @PageableDefault(
                     page = 0,
                     size = 20,
@@ -47,7 +50,7 @@ public class UserController {
 
             Pageable pageable){
 
-        return ResponseEntity.ok(userService.getAllUsers(keyword, pageable));
+        return ResponseEntity.ok(userService.getAllUsers(keyword, status, pageable));
     }
 
 

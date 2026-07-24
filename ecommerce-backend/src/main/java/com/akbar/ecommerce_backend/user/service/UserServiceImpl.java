@@ -11,8 +11,10 @@ import com.akbar.ecommerce_backend.user.enums.Role;
 import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
+import com.akbar.ecommerce_backend.user.specification.UserSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -71,22 +73,26 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, Pageable pageable) {
+    public PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, UserStatus status, Pageable pageable) {
 
-        Page<UserEntity> users;
+        Specification<UserEntity> specification = Specification.unrestricted();
 
-        if (keyword == null || keyword.isBlank()){
 
-            users = userRepository.findAll(pageable);
+        if (keyword != null && !keyword.isBlank()){
 
+            specification = specification.and(
+                    UserSpecification.hasKeyword(keyword)
+            );
         }
 
-        else {
+        if (status != null){
 
-            users = userRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrPhoneNumberContainingIgnoreCase(
-                    keyword, keyword, keyword, keyword, pageable);
-
+            specification = specification.and(
+                    UserSpecification.hasStatus(status)
+            );
         }
+
+        Page<UserEntity> users = userRepository.findAll(specification, pageable);
 
         List<UserResponseDTO> response = users.getContent()
                 .stream()

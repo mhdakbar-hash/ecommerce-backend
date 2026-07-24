@@ -4,6 +4,7 @@ import com.akbar.ecommerce_backend.user.dto.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserUpdateRequestDTO;
+import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import org.springframework.data.domain.Pageable;
 
 
@@ -13,7 +14,7 @@ public interface UserService {
 
     UserResponseDTO getUserById(Long id);
 
-    PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, Pageable pageable);
+    PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, UserStatus status, Pageable pageable);
 
     UserResponseDTO updateUser(Long id, UserUpdateRequestDTO requestDTO);
 
