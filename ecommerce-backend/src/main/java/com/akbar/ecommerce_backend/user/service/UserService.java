@@ -20,5 +20,7 @@ public interface UserService {
 
     void deleteUser(Long id);
 
+    UserResponseDTO restoreUser(Long id);
+
 
 }

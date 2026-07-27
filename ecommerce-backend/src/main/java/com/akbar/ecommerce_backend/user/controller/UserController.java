@@ -218,4 +218,38 @@ public class UserController {
 
 
 
+
+
+    @Operation(
+            summary = "Restore a deleted user",
+            description = "Restores a soft-deleted user by changing the account status from DELETED to ACTIVE."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "User restored successfully"),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(responseCode = "404", description = "Deleted user not found", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PatchMapping("/{id}/restore")
+    public ResponseEntity<UserResponseDTO> restoreUser(
+
+            @Parameter(
+                    description = "ID of the deleted user to restore",
+                    example = "1"
+            )
+            @PathVariable Long id){
+
+        return ResponseEntity.ok(userService.restoreUser(id));
+    }
+
+
+
 }

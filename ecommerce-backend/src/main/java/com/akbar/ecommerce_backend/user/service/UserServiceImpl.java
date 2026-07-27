@@ -63,7 +63,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getUserById(Long id) {
 
-        UserEntity user = userRepository.findById(id)
+        UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
         return userMapper.toResponseDTO(user);
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, UserStatus status, Pageable pageable) {
 
-        Specification<UserEntity> specification = Specification.unrestricted();
+        Specification<UserEntity> specification = UserSpecification.isNotDeleted();
 
 
         if (keyword != null && !keyword.isBlank()){
@@ -120,7 +120,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO requestDTO) {
 
-        UserEntity user = userRepository.findById(id)
+        UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
         user.setFirstName(requestDTO.getFirstName());
@@ -132,13 +132,32 @@ public class UserServiceImpl implements UserService {
 
     }
 
+
+
     @Override
     public void deleteUser(Long id) {
 
-        UserEntity user = userRepository.findById(id)
+        UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
-        userRepository.delete(user);
+        user.setStatus(UserStatus.DELETED);
+
+        userRepository.save(user);
+
+    }
+
+
+    @Override
+    public UserResponseDTO restoreUser(Long id) {
+
+        UserEntity user = userRepository.findByIdAndStatus(id, UserStatus.DELETED)
+                .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
+
+        user.setStatus(UserStatus.ACTIVE);
+
+        UserEntity savedUser = userRepository.save(user);
+
+        return userMapper.toResponseDTO(savedUser);
 
     }
 }

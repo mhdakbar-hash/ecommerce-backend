@@ -47,4 +47,13 @@ public class UserSpecification {
 
     }
 
+    public static Specification<UserEntity> isNotDeleted(){
+
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.notEqual(
+                        root.get("status"),
+                        UserStatus.DELETED);
+
+    }
+
 }
