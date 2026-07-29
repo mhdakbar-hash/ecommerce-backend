@@ -12,6 +12,7 @@ import com.akbar.ecommerce_backend.user.entity.UserEntity;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
 import com.akbar.ecommerce_backend.user.security.CustomUserDetails;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -41,6 +43,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponseDTO login(LoginRequestDTO requestDTO) {
 
+        log.info("Login attempt for email: {}", requestDTO.getEmail());
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         requestDTO.getEmail(),
@@ -52,6 +56,10 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = customUserDetails.getUser();
 
         String token = jwtService.generateToken(customUserDetails);
+
+        log.info("User logged in successfully. User ID: {}, Email: {}",
+                user.getId(),
+                user.getEmail());
 
         return LoginResponseDTO.builder()
                 .token(token)
@@ -94,6 +102,10 @@ public class AuthServiceImpl implements AuthService {
 
         UserEntity user = customUserDetails.getUser();
 
+        log.info("Password change requested. User ID: {}, Email: {}",
+                user.getId(),
+                user.getEmail());
+
         // Step 2 -new password & confirm password match
         if (!requestDTO.getNewPassword()
                 .equals(requestDTO.getConfirmPassword())){
@@ -119,6 +131,10 @@ public class AuthServiceImpl implements AuthService {
 
         //Step 6 - save updated password
         userRepository.save(user);
+
+        log.info("Password changed successfully. User ID: {}, Email: {}",
+                user.getId(),
+                user.getEmail());
 
     }
 

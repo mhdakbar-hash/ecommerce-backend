@@ -12,6 +12,7 @@ import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
 import com.akbar.ecommerce_backend.user.specification.UserSpecification;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -41,6 +43,8 @@ public class UserServiceImpl implements UserService {
 
         String email = requestDTO.getEmail().trim().toLowerCase();
 
+        log.info("Registering new user with email: {}", requestDTO.getEmail());
+
         if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists.");
         }
@@ -53,6 +57,9 @@ public class UserServiceImpl implements UserService {
         user.setStatus(UserStatus.ACTIVE);
 
         UserEntity savedUser = userRepository.save(user);
+
+        log.info("User registered successfully. User ID: {}, Email: {}",
+                savedUser.getId(), savedUser.getEmail());
 
         return userMapper.toResponseDTO(savedUser);
     }
@@ -75,6 +82,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageResponseDTO<UserResponseDTO> getAllUsers(String keyword, UserStatus status, Pageable pageable) {
 
+        log.debug("Fetching users. Keyword: {}, Status: {}, Page: {}, Size: {}",
+                keyword,
+                status,
+                pageable.getPageNumber(),
+                pageable.getPageSize());
+
         Specification<UserEntity> specification = UserSpecification.isNotDeleted();
 
 
@@ -93,6 +106,12 @@ public class UserServiceImpl implements UserService {
         }
 
         Page<UserEntity> users = userRepository.findAll(specification, pageable);
+
+        log.debug("Fetched {} users out of {} total users. Page: {}, Size: {}",
+                users.getNumberOfElements(),
+                users.getTotalElements(),
+                users.getNumber(),
+                users.getSize());
 
         List<UserResponseDTO> response = users.getContent()
                 .stream()
@@ -123,11 +142,18 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
+        log.info("Updating user. User ID: {}", id);
+
         user.setFirstName(requestDTO.getFirstName());
         user.setLastName(requestDTO.getLastName());
         user.setPhoneNumber(requestDTO.getPhoneNumber());
 
         userRepository.save(user);
+
+        log.info(
+                "User updated successfully. User ID: {}",
+                user.getId());
+
         return userMapper.toResponseDTO(user);
 
     }
@@ -140,9 +166,17 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
+        log.info("Soft delete requested. User ID: {}, Email: {}",
+                user.getId(),
+                user.getEmail());
+
         user.setStatus(UserStatus.DELETED);
 
         userRepository.save(user);
+
+        log.info("User soft deleted successfully. User ID: {}, Email: {}",
+                user.getId(),
+                user.getEmail());
 
     }
 
@@ -153,9 +187,15 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByIdAndStatus(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
+        log.info("Restore requested. User ID: {}, Email: {}",
+                user.getId(), user.getEmail());
+
         user.setStatus(UserStatus.ACTIVE);
 
         UserEntity savedUser = userRepository.save(user);
+
+        log.info("User restored successfully. User ID: {}, Email: {}",
+                savedUser.getId(), savedUser.getEmail());
 
         return userMapper.toResponseDTO(savedUser);
 
