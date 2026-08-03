@@ -8,6 +8,7 @@ import com.akbar.ecommerce_backend.user.enums.Role;
 import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -38,27 +39,32 @@ public class UserServiceImplTest {
     private UserServiceImpl userService;
 
 
+    private UserRequestDTO requestDTO;
+    private UserEntity user;
+    private UserEntity savedUser;
+    private UserResponseDTO responseDTO;
 
-    @Test
-    void registerUser_ShouldRegisterSuccessfully(){
 
-        // Arrange
+    @BeforeEach
+    void setUp(){
 
-        UserRequestDTO requestDTO = UserRequestDTO.builder()
+        requestDTO = UserRequestDTO.builder()
                 .firstName("Muhammad")
                 .lastName("Akbar")
                 .email("akbar@gmail.com")
                 .password("12345")
-                .phoneNumber("9399169442").build();
+                .phoneNumber("9399169442")
+                .build();
 
-        UserEntity user = UserEntity.builder()
+        user = UserEntity.builder()
                 .firstName("Muhammad")
                 .lastName("Akbar")
                 .email("akbar@gmail.com")
                 .password("12345")
-                .phoneNumber("9399169442").build();
+                .phoneNumber("9399169442")
+                .build();
 
-        UserEntity savedUser = UserEntity.builder()
+        savedUser = UserEntity.builder()
                 .id(1L)
                 .firstName("Muhammad")
                 .lastName("Akbar")
@@ -66,9 +72,10 @@ public class UserServiceImplTest {
                 .password("12345")
                 .phoneNumber("9399169442")
                 .role(Role.CUSTOMER)
-                .status(UserStatus.ACTIVE).build();
+                .status(UserStatus.ACTIVE)
+                .build();
 
-        UserResponseDTO responseDTO = UserResponseDTO.builder()
+        responseDTO = UserResponseDTO.builder()
                 .id(1L)
                 .firstName("Muhammad")
                 .lastName("Akbar")
@@ -77,6 +84,15 @@ public class UserServiceImplTest {
                 .role(Role.CUSTOMER)
                 .status(UserStatus.ACTIVE)
                 .build();
+
+
+    }
+
+
+    @Test
+    void registerUser_ShouldRegisterSuccessfully(){
+
+        // Arrange
 
         when(userRepository.findByEmailIgnoreCase(requestDTO.getEmail()))
                 .thenReturn(Optional.empty());
@@ -131,41 +147,13 @@ public class UserServiceImplTest {
 
 
 
-
-
-
-
-
-
-
-
-
     @Test
     void registerUser_ShouldThrowException_WhenEmailAlreadyExists() {
 
         // Arrange
 
-        UserRequestDTO requestDTO = UserRequestDTO.builder()
-                .firstName("Muhammad")
-                .lastName("Akbar")
-                .email("akbar@gmail.com")
-                .password("12345")
-                .phoneNumber("9399169442")
-                .build();
-
-        UserEntity existingUser = UserEntity.builder()
-                .id(1L)
-                .firstName("Muhammad")
-                .lastName("Akbar")
-                .email("akbar@gmail.com")
-                .password("encodedPassword")
-                .phoneNumber("9399169442")
-                .role(Role.CUSTOMER)
-                .status(UserStatus.ACTIVE)
-                .build();
-
         when(userRepository.findByEmailIgnoreCase(requestDTO.getEmail()))
-                .thenReturn(Optional.of(existingUser));
+                .thenReturn(Optional.of(savedUser));
 
         // Act & Assert
 
@@ -174,18 +162,16 @@ public class UserServiceImplTest {
                 () -> userService.registerUser(requestDTO)
         );
 
-        assertEquals("Email already exists.", exception.getMessage());
 
-        // Verify
+        // Assert & Verify
+
+        assertEquals("Email already exists.", exception.getMessage());
 
         verify(userRepository).findByEmailIgnoreCase(requestDTO.getEmail());
 
         verify(userMapper, never()).toEntity(any(UserRequestDTO.class));
-
         verify(passwordEncoder, never()).encode(anyString());
-
         verify(userRepository, never()).save(any(UserEntity.class));
-
         verify(userMapper, never()).toResponseDTO(any(UserEntity.class));
     }
 
