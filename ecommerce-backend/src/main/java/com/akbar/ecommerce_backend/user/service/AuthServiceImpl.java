@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
         return LoginResponseDTO.builder()
                 .token(token)
-                    .tokenType("Bearer")
+                .tokenType("Bearer")
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
