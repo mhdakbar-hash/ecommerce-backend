@@ -129,4 +129,24 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(SkuAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleSkuAlreadyExistsException(SkuAlreadyExistsException exception) {
+
+        log.warn("Product creation failed. Sku already exists: {}", exception.getMessage());
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+
+
+    }
+
+
 }
