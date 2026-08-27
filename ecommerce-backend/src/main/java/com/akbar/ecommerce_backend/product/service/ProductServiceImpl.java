@@ -1,5 +1,6 @@
 package com.akbar.ecommerce_backend.product.service;
 
+import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
 import com.akbar.ecommerce_backend.exception.SkuAlreadyExistsException;
 import com.akbar.ecommerce_backend.product.dto.ProductRequestDTO;
 import com.akbar.ecommerce_backend.product.dto.ProductResponseDTO;
@@ -51,6 +52,22 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toResponseDTO(savedProduct);
 
     }
+
+
+    @Override
+    public ProductResponseDTO getProductById(Long id) {
+
+        ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.DELETED)
+                .orElseThrow(()-> new ResourceNotFoundException("No product found with id: " + id));
+
+        return productMapper.toResponseDTO(product);
+
+    }
+
+
+
+
+
 
 
 

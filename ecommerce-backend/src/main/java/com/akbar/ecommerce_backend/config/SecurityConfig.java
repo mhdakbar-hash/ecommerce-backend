@@ -81,6 +81,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE,
                                 "/api/v1/users/{id}").hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/v1/users/{id}/restore").hasRole("ADMIN")
+
+
+
                         // Product APIs
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/products").hasRole("ADMIN")
