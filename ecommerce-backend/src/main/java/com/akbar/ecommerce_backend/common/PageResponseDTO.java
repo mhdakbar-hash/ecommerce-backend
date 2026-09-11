@@ -1,4 +1,4 @@
-package com.akbar.ecommerce_backend.user.dto.common;
+package com.akbar.ecommerce_backend.common;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
