@@ -70,6 +70,7 @@ public class SecurityConfig {
                         "/v3/api-docs/**")
                         .permitAll()
 
+
                         // User APIs
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/users",
@@ -98,6 +99,23 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.PATCH,
                                 "/api/v1/products/{id}/restore").hasRole("ADMIN")
+
+
+
+                        // Category APIs
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/categories").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/categories/{id}").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/api/v1/categories/**").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/v1/categories/*/restore").hasRole("ADMIN")
+
+
 
 
                         .anyRequest().authenticated())

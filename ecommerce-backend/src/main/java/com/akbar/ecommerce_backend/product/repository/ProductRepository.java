@@ -12,10 +12,13 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<ProductEntity, Long>,
         JpaSpecificationExecutor<ProductEntity> {
 
+
     boolean existsBySkuIgnoreCase(String sku);
 
     Optional<ProductEntity> findByIdAndStatusNot (Long id, ProductStatus status);
 
     Optional<ProductEntity> findByIdAndStatus(Long id, ProductStatus status);
+
+    boolean existsByCategoryId(Long categoryId);
 
 }

@@ -1,5 +1,6 @@
 package com.akbar.ecommerce_backend.product.entity;
 
+import com.akbar.ecommerce_backend.category.entity.CategoryEntity;
 import com.akbar.ecommerce_backend.product.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,11 @@ public class ProductEntity {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private CategoryEntity category;
 
 
 

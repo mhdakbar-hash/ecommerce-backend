@@ -79,13 +79,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PageResponseDTO<ProductResponseDTO> getAllProducts(String keyword, ProductStatus status, Pageable pageable) {
 
-        log.debug(
-                "Fetching products. Keyword: {}, Status: {}, Page: {}, Size: {}",
+        log.debug("Fetching products. Keyword: {}, Status: {}, Page: {}, Size: {}",
                 keyword,
                 status,
                 pageable.getPageNumber(),
-                pageable.getPageSize()
-        );
+                pageable.getPageSize());
 
         Specification<ProductEntity> specification =
                 ProductSpecification.isNotDeleted();
@@ -113,7 +111,7 @@ public class ProductServiceImpl implements ProductService {
                 products.getTotalElements(),
                 products.getNumber(),
                 products.getSize()
-        );
+            );
 
         List<ProductResponseDTO> response =
                 products.getContent()

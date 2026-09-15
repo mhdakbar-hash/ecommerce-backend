@@ -129,6 +129,7 @@ public class GlobalExceptionHandler {
     }
 
 
+
     @ExceptionHandler(SkuAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleSkuAlreadyExistsException(SkuAlreadyExistsException exception) {
 
@@ -146,6 +147,44 @@ public class GlobalExceptionHandler {
                 .body(response);
 
 
+    }
+
+
+
+    @ExceptionHandler(CategoryAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryAlreadyExistsException(CategoryAlreadyExistsException exception) {
+
+        log.warn("Category creation failed. Category already exists: {}", exception.getMessage());
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(response);
+
+    }
+
+
+    @ExceptionHandler(CategoryInUseException.class)
+    public ResponseEntity<ErrorResponse> handleCategoryInUseException(CategoryInUseException exception) {
+
+        log.warn("Category deletion failed. Category is in use: {}",
+                exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errorResponse);
     }
 
 
