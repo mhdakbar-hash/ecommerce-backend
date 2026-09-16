@@ -118,6 +118,13 @@ public class SecurityConfig {
 
 
 
+                        // Inventory APIs
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/inventory").hasRole("ADMIN")
+
+
+
+
                         .anyRequest().authenticated())
 
 

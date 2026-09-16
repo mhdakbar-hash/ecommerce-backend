@@ -188,4 +188,23 @@ public class GlobalExceptionHandler {
     }
 
 
+
+    @ExceptionHandler(InventoryAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleInventoryAlreadyExistsException(InventoryAlreadyExistsException exception) {
+
+        log.warn("Inventory creation failed. Inventory already exists: {}",
+                exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
+
 }
