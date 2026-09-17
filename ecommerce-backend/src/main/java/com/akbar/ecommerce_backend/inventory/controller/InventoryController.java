@@ -4,6 +4,8 @@ import com.akbar.ecommerce_backend.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.exception.ErrorResponse;
 import com.akbar.ecommerce_backend.inventory.dto.InventoryRequestDTO;
 import com.akbar.ecommerce_backend.inventory.dto.InventoryResponseDTO;
+import com.akbar.ecommerce_backend.inventory.dto.InventoryStockRequestDTO;
+import com.akbar.ecommerce_backend.inventory.dto.InventoryUpdateRequestDTO;
 import com.akbar.ecommerce_backend.inventory.service.InventoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -191,6 +193,150 @@ public class InventoryController {
             @PathVariable Long productId) {
 
         return ResponseEntity.ok(inventoryService.getInventoryByProductId(productId));
+
+    }
+
+
+
+
+
+
+
+    @Operation(
+            summary = "Update inventory",
+            description = "Updates the available quantity of an existing inventory record."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Inventory updated successfully"),
+
+            @ApiResponse(responseCode = "400", description = "Invalid request payload", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "403", description = "Access denied. ADMIN role required.", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "404", description = "Inventory not found", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            ))
+    })
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PutMapping("/{id}")
+    public ResponseEntity<InventoryResponseDTO> updateInventory(
+
+            @Parameter(
+                    description = "Unique ID of the inventory record",
+                    example = "1"
+            )
+            @PathVariable Long id,
+
+            @Valid
+            @RequestBody InventoryUpdateRequestDTO requestDTO) {
+
+        return ResponseEntity.ok(inventoryService.updateInventory(id, requestDTO));
+
+    }
+
+
+
+
+
+
+
+    @Operation(
+            summary = "Add stock",
+            description = "Adds the specified quantity to the available stock of an existing inventory record."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Stock added successfully"),
+
+            @ApiResponse(responseCode = "400", description = "Invalid request payload", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "403", description = "Access denied. ADMIN role required.", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "404", description = "Inventory not found", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            ))
+    })
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PatchMapping("/{id}/add-stock")
+    public ResponseEntity<InventoryResponseDTO> addStock(
+
+            @Parameter(
+                    description = "Unique ID of the inventory record",
+                    example = "1"
+            )
+            @PathVariable Long id,
+
+            @Valid
+            @RequestBody InventoryStockRequestDTO requestDTO) {
+
+        return ResponseEntity.ok(inventoryService.addStock(id, requestDTO));
+
+    }
+
+
+
+
+
+
+
+    @Operation(
+            summary = "Remove stock",
+            description = "Removes the specified quantity from the available stock of an existing inventory record."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Stock removed successfully"),
+
+            @ApiResponse(responseCode = "400", description = "Invalid request payload", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "401", description = "Authentication required", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "403", description = "Access denied. ADMIN role required.", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "404", description = "Inventory not found", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "409", description = "Insufficient available stock", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class)
+            ))
+    })
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PatchMapping("/{id}/remove-stock")
+    public ResponseEntity<InventoryResponseDTO> removeStock(
+
+            @Parameter(
+                    description = "Unique ID of the inventory record",
+                    example = "1"
+            )
+            @PathVariable Long id,
+
+            @Valid
+            @RequestBody InventoryStockRequestDTO requestDTO) {
+
+        return ResponseEntity.ok(inventoryService.removeStock(id, requestDTO));
 
     }
 

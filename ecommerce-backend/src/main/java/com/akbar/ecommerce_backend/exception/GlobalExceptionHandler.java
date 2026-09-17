@@ -207,4 +207,23 @@ public class GlobalExceptionHandler {
     }
 
 
+
+    @ExceptionHandler(InventoryStockInsufficientException.class)
+    public ResponseEntity<ErrorResponse> handleInventoryStockInsufficientException(
+            InventoryStockInsufficientException exception) {
+
+        log.warn("Stock removal failed. Insufficient inventory stock: {}",
+                exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
+
 }

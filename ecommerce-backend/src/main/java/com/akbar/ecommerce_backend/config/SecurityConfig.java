@@ -122,6 +122,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/inventory").hasRole("ADMIN")
 
+                        .requestMatchers(HttpMethod.PUT,
+                                "/api/v1/inventory/*").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/v1/inventory/*/add-stock").hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/api/v1/inventory/*/remove-stock").hasRole("ADMIN")
+
 
 
 

@@ -2,9 +2,12 @@ package com.akbar.ecommerce_backend.inventory.service;
 
 import com.akbar.ecommerce_backend.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.exception.InventoryAlreadyExistsException;
+import com.akbar.ecommerce_backend.exception.InventoryStockInsufficientException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
 import com.akbar.ecommerce_backend.inventory.dto.InventoryRequestDTO;
 import com.akbar.ecommerce_backend.inventory.dto.InventoryResponseDTO;
+import com.akbar.ecommerce_backend.inventory.dto.InventoryStockRequestDTO;
+import com.akbar.ecommerce_backend.inventory.dto.InventoryUpdateRequestDTO;
 import com.akbar.ecommerce_backend.inventory.entity.InventoryEntity;
 import com.akbar.ecommerce_backend.inventory.mapper.InventoryMapper;
 import com.akbar.ecommerce_backend.inventory.repository.InventoryRepository;
@@ -152,6 +155,100 @@ public class InventoryServiceImpl implements InventoryService {
                 product.getId());
 
         return inventoryMapper.toResponseDTO(inventory);
+
+    }
+
+
+
+
+
+    @Override
+    public InventoryResponseDTO updateInventory(Long id, InventoryUpdateRequestDTO requestDTO) {
+
+        log.debug("Updating inventory. Inventory ID: {}, New available quantity: {}",
+                id,
+                requestDTO.getAvailableQuantity());
+
+
+        InventoryEntity inventory = inventoryRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("No inventory found with id: " + id));
+
+
+        inventory.setAvailableQuantity(requestDTO.getAvailableQuantity());
+
+        InventoryEntity updatedInventory =
+                inventoryRepository.save(inventory);
+
+        log.debug("Inventory updated successfully. Inventory ID: {}, Available quantity: {}",
+                updatedInventory.getId(),
+                updatedInventory.getAvailableQuantity());
+
+        return inventoryMapper.toResponseDTO(updatedInventory);
+
+    }
+
+
+
+
+
+    @Override
+    public InventoryResponseDTO addStock(Long id, InventoryStockRequestDTO requestDTO) {
+
+        log.debug("Adding stock. Inventory ID: {}, Quantity: {}",
+                id,
+                requestDTO.getQuantity());
+
+        InventoryEntity inventory = inventoryRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("No inventory found with id: " + id));
+
+
+        inventory.setAvailableQuantity(
+                inventory.getAvailableQuantity() + requestDTO.getQuantity());
+
+        InventoryEntity updatedInventory =
+                inventoryRepository.save(inventory);
+
+        log.debug("Stock added successfully. Inventory ID: {}, Available quantity: {}",
+                updatedInventory.getId(),
+                updatedInventory.getAvailableQuantity());
+
+
+        return inventoryMapper.toResponseDTO(updatedInventory);
+
+    }
+
+
+
+
+
+    @Override
+    public InventoryResponseDTO removeStock(Long id, InventoryStockRequestDTO requestDTO) {
+
+        log.debug("Removing stock. Inventory ID: {}, Quantity: {}",
+                id,
+                requestDTO.getQuantity());
+
+        InventoryEntity inventory = inventoryRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("No inventory found with id: " + id));
+
+
+        if (inventory.getAvailableQuantity() < requestDTO.getQuantity()) {
+
+            throw new InventoryStockInsufficientException(
+                    "Insufficient available stock for inventory id: " + id);}
+
+        inventory.setAvailableQuantity(
+                inventory.getAvailableQuantity() - requestDTO.getQuantity());
+
+        InventoryEntity updatedInventory =
+                inventoryRepository.save(inventory);
+
+        log.debug("Stock removed successfully. Inventory ID: {}, Available quantity: {}",
+                updatedInventory.getId(),
+                updatedInventory.getAvailableQuantity());
+
+
+        return inventoryMapper.toResponseDTO(updatedInventory);
 
     }
 
