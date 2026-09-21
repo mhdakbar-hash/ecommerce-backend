@@ -1,9 +1,6 @@
 package com.akbar.ecommerce_backend.product.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -53,4 +50,13 @@ public class ProductUpdateRequestDTO {
             example = "https://example.com/iphone16pro.jpg"
     )
     private String imageUrl;
+
+
+    @Schema(
+            description = "Updated category ID of the product",
+            example = "1"
+    )
+    @NotNull(message = "Category ID is required.")
+
+    private Long categoryId;
 }

@@ -72,6 +72,13 @@ public class ProductResponseDTO {
 
 
     @Schema(
+            description = "Name of the category associated with the product",
+            example = "Mobiles"
+    )
+    private String categoryName;
+
+
+    @Schema(
             description = "Timestamp when the product was created",
             example = "2026-08-24T10:30:00"
     )

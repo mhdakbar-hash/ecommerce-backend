@@ -1,5 +1,8 @@
 package com.akbar.ecommerce_backend.product.service;
 
+import com.akbar.ecommerce_backend.category.entity.CategoryEntity;
+import com.akbar.ecommerce_backend.category.enums.CategoryStatus;
+import com.akbar.ecommerce_backend.category.repository.CategoryRepository;
 import com.akbar.ecommerce_backend.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
 import com.akbar.ecommerce_backend.exception.SkuAlreadyExistsException;
@@ -25,11 +28,14 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final CategoryRepository categoryRepository;
 
-    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper){
+    public ProductServiceImpl(ProductRepository productRepository,
+                              ProductMapper productMapper, CategoryRepository categoryRepository){
 
         this.productRepository = productRepository;
         this.productMapper = productMapper;
+        this.categoryRepository = categoryRepository;
     }
 
 
@@ -46,10 +52,18 @@ public class ProductServiceImpl implements ProductService {
             throw new SkuAlreadyExistsException("Product with SKU '" + sku + "' already exists.");
         }
 
+        CategoryEntity category = categoryRepository
+                .findByIdAndStatus(requestDTO.getCategoryId(), CategoryStatus.ACTIVE)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                                "Active category not found with id: " + requestDTO.getCategoryId())
+                );
+
         ProductEntity product = productMapper.toEntity(requestDTO);
 
         product.setSku(sku);
         product.setStatus(ProductStatus.ACTIVE);
+
+        product.setCategory(category);
 
         ProductEntity savedProduct = productRepository.save(product);
 
@@ -141,19 +155,24 @@ public class ProductServiceImpl implements ProductService {
 
         log.info("Updating product. Product ID: {}, SKU: {}", id, product.getSku());
 
+        CategoryEntity category = categoryRepository
+                        .findByIdAndStatus(requestDTO.getCategoryId(), CategoryStatus.ACTIVE)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                        "Active category not found with id: " + requestDTO.getCategoryId())
+                        );
+
         product.setName(requestDTO.getName());
         product.setDescription(requestDTO.getDescription());
         product.setPrice(requestDTO.getPrice());
         product.setStockQuantity(requestDTO.getStockQuantity());
         product.setImageUrl(requestDTO.getImageUrl());
+        product.setCategory(category);
 
         ProductEntity updatedProduct = productRepository.save(product);
 
-        log.info(
-                "Product updated successfully. Product ID: {}, SKU: {}",
+        log.info("Product updated successfully. Product ID: {}, SKU: {}",
                 updatedProduct.getId(),
-                updatedProduct.getSku()
-        );
+                updatedProduct.getSku());
 
         return productMapper.toResponseDTO(updatedProduct);
     }

@@ -72,4 +72,12 @@ public class ProductRequestDTO {
     private String imageUrl;
 
 
+    @Schema(
+            description = "ID of the category associated with the product",
+            example = "1"
+    )
+    @NotNull(message = "Category ID is required.")
+    private Long categoryId;
+
+
 }

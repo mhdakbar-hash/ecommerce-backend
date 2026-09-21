@@ -34,6 +34,7 @@ public class ProductMapper {
                 .stockQuantity(productEntity.getStockQuantity())
                 .imageUrl(productEntity.getImageUrl())
                 .status(productEntity.getStatus())
+                .categoryName(productEntity.getCategory().getName())
                 .createdAt(productEntity.getCreatedAt())
                 .updatedAt(productEntity.getUpdatedAt())
                 .build();

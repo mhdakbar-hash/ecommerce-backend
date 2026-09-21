@@ -226,4 +226,41 @@ public class GlobalExceptionHandler {
     }
 
 
+
+    @ExceptionHandler(CartEmptyException.class)
+    public ResponseEntity<ErrorResponse> handleCartEmptyException(CartEmptyException exception) {
+
+        log.warn("Order creation failed. Cart is empty: {}",
+                exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
+
+
+
+    @ExceptionHandler(OrderCancellationException.class)
+    public ResponseEntity<ErrorResponse> handleOrderCancellationException(OrderCancellationException exception) {
+
+        log.warn("Order cancellation failed: {}",
+                exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
+
 }
