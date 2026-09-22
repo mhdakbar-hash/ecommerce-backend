@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -249,6 +250,115 @@ public class InventoryServiceImpl implements InventoryService {
 
 
         return inventoryMapper.toResponseDTO(updatedInventory);
+
+    }
+
+
+
+
+
+
+    @Override
+    @Transactional
+    public void reserveStock(Long productId, Integer quantity) {
+
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException(
+                    "Reservation quantity must be greater than 0");
+        }
+
+
+        log.debug("Reserving inventory stock. Product ID: {}, Quantity: {}",
+                productId,
+                quantity);
+
+
+        InventoryEntity inventory = inventoryRepository.findByProductIdForUpdate(productId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                        "Inventory not found for product id: " + productId));
+
+
+        Integer availableQuantity =
+                inventory.getAvailableQuantity();
+
+        if (availableQuantity < quantity) {
+
+            throw new InventoryStockInsufficientException(
+                    "Insufficient stock for product id: " + productId + ". Available: " + availableQuantity
+                            + ", Requested: " + quantity);
+        }
+
+
+        inventory.setAvailableQuantity(
+                availableQuantity - quantity);
+
+
+        inventory.setReservedQuantity(
+                inventory.getReservedQuantity() + quantity);
+
+
+        inventoryRepository.save(inventory);
+
+        log.info("Inventory stock reserved successfully. Product ID: {}, Quantity: {}, Available: {}, Reserved: {}",
+                productId,
+                quantity,
+                inventory.getAvailableQuantity(),
+                inventory.getReservedQuantity());
+
+    }
+
+
+
+
+
+
+    @Override
+    @Transactional
+    public void releaseReservedStock(Long productId, Integer quantity) {
+
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException(
+                    "Release quantity must be greater than 0");
+        }
+
+
+        log.debug("Releasing reserved inventory stock. Product ID: {}, Quantity: {}",
+                productId,
+                quantity);
+
+        InventoryEntity inventory = inventoryRepository
+                .findByProductIdForUpdate(productId)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                        "Inventory not found for product id: " + productId));
+
+
+        Integer reservedQuantity =
+                inventory.getReservedQuantity();
+
+        if (reservedQuantity < quantity) {
+
+            throw new InventoryStockInsufficientException(
+                    "Reserved stock is insufficient for product id: " + productId + ". Reserved: " + reservedQuantity
+                            + ", Requested release: " + quantity);
+        }
+
+
+        inventory.setReservedQuantity(
+                reservedQuantity - quantity);
+
+
+        inventory.setAvailableQuantity(
+                inventory.getAvailableQuantity() + quantity);
+
+
+        inventoryRepository.save(inventory);
+
+
+        log.info("Reserved inventory stock released successfully. Product ID: {}, Quantity: {}, Available: {}, Reserved: {}",
+                productId,
+                quantity,
+                inventory.getAvailableQuantity(),
+                inventory.getReservedQuantity());
 
     }
 

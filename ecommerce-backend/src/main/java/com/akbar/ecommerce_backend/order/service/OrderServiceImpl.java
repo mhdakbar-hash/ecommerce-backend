@@ -7,6 +7,7 @@ import com.akbar.ecommerce_backend.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.exception.CartEmptyException;
 import com.akbar.ecommerce_backend.exception.OrderCancellationException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
+import com.akbar.ecommerce_backend.inventory.service.InventoryService;
 import com.akbar.ecommerce_backend.order.dto.OrderResponseDTO;
 import com.akbar.ecommerce_backend.order.entity.OrderEntity;
 import com.akbar.ecommerce_backend.order.entity.OrderItemEntity;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +41,7 @@ public class OrderServiceImpl implements OrderService {
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final OrderMapper orderMapper;
+    private final InventoryService inventoryService;
 
 
 
@@ -72,6 +75,17 @@ public class OrderServiceImpl implements OrderService {
                     "Cannot create order because cart is empty");
         }
 
+        List<CartItemEntity> cartItems =
+                cart.getCartItems()
+                        .stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        item -> item
+                                                .getProduct()
+                                                .getId())
+                        )
+                        .toList();
+
         OrderEntity order = OrderEntity.builder()
                 .user(user)
                 .orderNumber(
@@ -84,8 +98,26 @@ public class OrderServiceImpl implements OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        for (CartItemEntity cartItem :
-                cart.getCartItems()) {
+
+        for (CartItemEntity cartItem : cartItems) {
+
+            Long productId =
+                    cartItem.getProduct().getId();
+
+            Integer quantity =
+                    cartItem.getQuantity();
+
+            log.debug(
+                    "Reserving inventory for order. Product ID: {}, Quantity: {}",
+                    productId,
+                    quantity
+            );
+
+            // Inventory reserve
+            inventoryService.reserveStock(
+                    productId,
+                    quantity
+            );
 
             BigDecimal unitPrice =
                     cartItem.getProduct().getPrice();
@@ -123,6 +155,9 @@ public class OrderServiceImpl implements OrderService {
 
         OrderEntity savedOrder =
                 orderRepository.save(order);
+
+
+        cart.getCartItems().clear();
 
 
         log.info("Order created successfully. Order ID: {}, Order Number: {}, User ID: {}, Total Amount: {}",
@@ -251,11 +286,38 @@ public class OrderServiceImpl implements OrderService {
         OrderStatus currentStatus = order.getStatus();
 
 
-        if (currentStatus != OrderStatus.PENDING
-                && currentStatus != OrderStatus.CONFIRMED) {
+        if (currentStatus != OrderStatus.PENDING) {
 
             throw new OrderCancellationException(
-                    "Order cannot be cancelled because its current status is " + currentStatus);
+                    "Order cannot be cancelled because its current status is "
+                            + currentStatus);
+        }
+
+        List<OrderItemEntity> orderItems =
+                order.getOrderItems()
+                        .stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        item -> item
+                                                .getProduct()
+                                                .getId())
+                        )
+                        .toList();
+
+        for (OrderItemEntity orderItem : orderItems) {
+
+            Long productId =
+                    orderItem.getProduct().getId();
+
+            Integer quantity =
+                    orderItem.getQuantity();
+
+
+            log.debug("Releasing inventory for cancelled order. Product ID: {}, Quantity: {}",
+                    productId,
+                    quantity);
+
+            inventoryService.releaseReservedStock(productId, quantity);
         }
 
         order.setStatus(OrderStatus.CANCELLED);

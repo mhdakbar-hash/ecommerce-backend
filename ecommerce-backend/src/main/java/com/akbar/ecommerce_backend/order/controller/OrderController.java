@@ -55,7 +55,16 @@ public class OrderController {
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "User or cart not found, or cart is empty",
+                    description = "User, cart, or inventory not found",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Cart is empty or inventory stock is insufficient",
                     content = @Content(
                             schema = @Schema(
                                     implementation = ErrorResponse.class

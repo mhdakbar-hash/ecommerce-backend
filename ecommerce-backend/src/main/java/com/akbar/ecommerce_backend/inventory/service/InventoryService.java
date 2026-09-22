@@ -23,7 +23,8 @@ public interface InventoryService {
 
     InventoryResponseDTO removeStock(Long id, InventoryStockRequestDTO requestDTO);
 
+    void reserveStock(Long productId, Integer quantity);
 
-
+    void releaseReservedStock(Long productId, Integer quantity);
 
 }
