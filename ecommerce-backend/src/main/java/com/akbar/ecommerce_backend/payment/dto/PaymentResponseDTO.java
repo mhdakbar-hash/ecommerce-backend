@@ -62,6 +62,13 @@ public class PaymentResponseDTO {
 
 
     @Schema(
+            description = "Transaction reference generated for the refund",
+            example = "MOCK-REFUND-8F72A91"
+    )
+    private String refundReference;
+
+
+    @Schema(
             description = "Date and time when the payment was created",
             example = "2026-09-23T14:45:00"
     )

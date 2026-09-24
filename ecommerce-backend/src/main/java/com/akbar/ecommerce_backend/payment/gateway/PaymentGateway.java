@@ -5,4 +5,7 @@ import com.akbar.ecommerce_backend.payment.entity.PaymentEntity;
 public interface PaymentGateway {
 
     PaymentGatewayResponse processPayment(PaymentEntity payment);
+
+    PaymentGatewayResponse refundPayment(PaymentEntity payment);
+
 }

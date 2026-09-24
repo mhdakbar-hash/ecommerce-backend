@@ -327,4 +327,23 @@ public class GlobalExceptionHandler {
     }
 
 
+
+
+    @ExceptionHandler(PaymentRefundException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentRefundException(PaymentRefundException exception) {
+
+        log.warn("Payment refund failed: {}",
+                exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
+
 }

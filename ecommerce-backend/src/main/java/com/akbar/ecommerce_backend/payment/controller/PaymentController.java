@@ -335,4 +335,74 @@ public class PaymentController {
 
 
 
+
+
+    @Operation(
+            summary = "Refund successful payment",
+            description = "Refunds a successful payment for the authenticated user's confirmed order."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Payment refunded successfully",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = PaymentResponseDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Payment or user not found",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Payment cannot be refunded in its current state",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal server error",
+                    content = @Content(
+                            schema = @Schema(
+                                    implementation = ErrorResponse.class
+                            )
+                    )
+            )
+    })
+
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PostMapping("/{id}/refund")
+    public ResponseEntity<PaymentResponseDTO> refundPayment(
+
+            @Parameter(
+                    description = "ID of the payment to refund",
+                    example = "1"
+            )
+
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(paymentService.refundPayment(id));
+
+    }
+
+
 }

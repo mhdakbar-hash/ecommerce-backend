@@ -31,4 +31,20 @@ public class MockPaymentGateway implements PaymentGateway {
                 transactionReference);
 
     }
+
+
+
+
+    @Override
+    public PaymentGatewayResponse refundPayment(PaymentEntity payment) {
+
+        String refundReference =
+                "MOCK-REFUND-" + UUID.randomUUID();
+
+        return new PaymentGatewayResponse(
+                PaymentStatus.REFUNDED,
+                refundReference);
+    }
+
+
 }

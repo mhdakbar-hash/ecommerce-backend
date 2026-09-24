@@ -16,4 +16,6 @@ public interface PaymentService {
 
     PaymentResponseDTO retryPayment(Long id, PaymentRetryRequestDTO requestDTO);
 
+    PaymentResponseDTO refundPayment(Long id);
+
 }

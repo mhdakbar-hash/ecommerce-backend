@@ -18,6 +18,9 @@ public class PaymentMapper {
                 .transactionReference(
                         entity.getTransactionReference()
                 )
+                .refundReference(
+                        entity.getRefundReference()
+                )
                 .createdAt(entity.getCreatedAt())
                 .build();
     }

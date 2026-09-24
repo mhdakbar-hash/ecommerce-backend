@@ -44,6 +44,8 @@ public class PaymentEntity {
 
     private String transactionReference;
 
+    private String refundReference;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

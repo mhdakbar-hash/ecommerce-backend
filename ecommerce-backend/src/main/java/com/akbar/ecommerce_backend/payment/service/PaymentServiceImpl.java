@@ -2,9 +2,12 @@ package com.akbar.ecommerce_backend.payment.service;
 
 import com.akbar.ecommerce_backend.common.PageResponseDTO;
 import com.akbar.ecommerce_backend.exception.PaymentInitiationException;
+import com.akbar.ecommerce_backend.exception.PaymentRefundException;
 import com.akbar.ecommerce_backend.exception.PaymentRetryException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
+import com.akbar.ecommerce_backend.inventory.service.InventoryService;
 import com.akbar.ecommerce_backend.order.entity.OrderEntity;
+import com.akbar.ecommerce_backend.order.entity.OrderItemEntity;
 import com.akbar.ecommerce_backend.order.enums.OrderStatus;
 import com.akbar.ecommerce_backend.order.repository.OrderRepository;
 import com.akbar.ecommerce_backend.payment.dto.PaymentRequestDTO;
@@ -27,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -40,6 +44,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final UserRepository userRepository;
     private final PaymentMapper paymentMapper;
     private final PaymentGateway paymentGateway;
+    private final InventoryService inventoryService;
 
 
 
@@ -307,6 +312,110 @@ public class PaymentServiceImpl implements PaymentService {
                 order.getId(),
                 updatedPayment.getStatus(),
                 updatedPayment.getTransactionReference());
+
+        return paymentMapper.toPaymentResponseDTO(updatedPayment);
+
+    }
+
+
+
+
+
+
+    @Override
+    @Transactional
+    public PaymentResponseDTO refundPayment(Long id) {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String email = authentication.getName();
+
+        log.info("Refunding payment. Payment ID: {}, User email: {}",
+                id,
+                email);
+
+        UserEntity user = userRepository.findByEmailIgnoreCase(email)
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                        "No user found with email: " + email));
+
+
+        PaymentEntity payment = paymentRepository.findByIdAndOrderUserId(
+                id, user.getId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                        "No payment found with id: " + id));
+
+
+        if (payment.getStatus() != PaymentStatus.SUCCESS) {
+
+            throw new PaymentRefundException(
+                    "Payment cannot be refunded because its current status is "
+                            + payment.getStatus());
+        }
+
+
+        OrderEntity order = payment.getOrder();
+
+        if (order.getStatus() != OrderStatus.CONFIRMED) {
+
+            throw new PaymentRefundException(
+                    "Payment cannot be refunded because order has status "
+                            + order.getStatus());
+        }
+
+
+        log.debug("Processing payment refund through gateway. Payment ID: {}, Order ID: {}",
+                payment.getId(),
+                order.getId());
+
+        PaymentGatewayResponse gatewayResponse =
+                paymentGateway.refundPayment(payment);
+
+
+        payment.setStatus(gatewayResponse.getStatus());
+
+        payment.setRefundReference(
+                gatewayResponse.getTransactionReference());
+
+
+        order.setStatus(OrderStatus.REFUNDED);
+
+
+        List<OrderItemEntity> orderItems =
+                order.getOrderItems()
+                        .stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        item -> item
+                                                .getProduct()
+                                                .getId())
+                        )
+                        .toList();
+
+        for (OrderItemEntity orderItem : orderItems) {
+
+            Long productId = orderItem
+                            .getProduct()
+                            .getId();
+
+            Integer quantity = orderItem.getQuantity();
+
+            log.debug("Releasing inventory for refunded order. Product ID: {}, Quantity: {}",
+                    productId,
+                    quantity);
+
+            inventoryService.releaseReservedStock(productId, quantity);
+        }
+
+        orderRepository.save(order);
+
+        PaymentEntity updatedPayment = paymentRepository.save(payment);
+
+
+        log.info("Payment refunded successfully. Payment ID: {}, Order ID: {}, Refund Reference: {}",
+                updatedPayment.getId(),
+                order.getId(),
+                updatedPayment.getRefundReference());
 
         return paymentMapper.toPaymentResponseDTO(updatedPayment);
 
