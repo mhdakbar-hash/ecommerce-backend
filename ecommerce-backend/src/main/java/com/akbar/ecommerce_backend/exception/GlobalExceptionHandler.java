@@ -346,4 +346,23 @@ public class GlobalExceptionHandler {
     }
 
 
+
+
+    @ExceptionHandler(OrderStatusUpdateException.class)
+    public ResponseEntity<ErrorResponse> handleOrderStatusUpdateException(OrderStatusUpdateException exception) {
+
+        log.warn("Order status update failed: {}",
+                exception.getMessage());
+
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null);
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(errorResponse);
+    }
+
+
 }

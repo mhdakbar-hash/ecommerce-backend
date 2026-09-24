@@ -1,5 +1,6 @@
 package com.akbar.ecommerce_backend.order.mapper;
 
+import com.akbar.ecommerce_backend.order.dto.AdminOrderResponseDTO;
 import com.akbar.ecommerce_backend.order.dto.OrderItemResponseDTO;
 import com.akbar.ecommerce_backend.order.dto.OrderResponseDTO;
 import com.akbar.ecommerce_backend.order.entity.OrderEntity;
@@ -30,6 +31,28 @@ public class OrderMapper {
         return OrderResponseDTO.builder()
                 .id(entity.getId())
                 .orderNumber(entity.getOrderNumber())
+                .status(entity.getStatus())
+                .totalAmount(entity.getTotalAmount())
+                .orderItems(
+                        entity.getOrderItems()
+                                .stream()
+                                .map(this::toOrderItemResponseDTO)
+                                .toList()
+                )
+                .createdAt(entity.getCreatedAt())
+                .build();
+    }
+
+
+
+
+    public AdminOrderResponseDTO toAdminOrderResponseDTO(OrderEntity entity) {
+
+        return AdminOrderResponseDTO.builder()
+                .id(entity.getId())
+                .orderNumber(entity.getOrderNumber())
+                .userId(entity.getUser().getId())
+                .userEmail(entity.getUser().getEmail())
                 .status(entity.getStatus())
                 .totalAmount(entity.getTotalAmount())
                 .orderItems(
