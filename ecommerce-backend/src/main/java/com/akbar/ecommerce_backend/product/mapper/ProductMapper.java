@@ -15,7 +15,6 @@ public class ProductMapper {
                 .description(requestDTO.getDescription())
                 .sku(requestDTO.getSku())
                 .price(requestDTO.getPrice())
-                .stockQuantity(requestDTO.getStockQuantity())
                 .imageUrl(requestDTO.getImageUrl())
 //                .status(ProductStatus.ACTIVE)     -> this will be business logic part
                .build();
@@ -31,7 +30,6 @@ public class ProductMapper {
                 .description(productEntity.getDescription())
                 .sku(productEntity.getSku())
                 .price(productEntity.getPrice())
-                .stockQuantity(productEntity.getStockQuantity())
                 .imageUrl(productEntity.getImageUrl())
                 .status(productEntity.getStatus())
                 .categoryName(productEntity.getCategory().getName())

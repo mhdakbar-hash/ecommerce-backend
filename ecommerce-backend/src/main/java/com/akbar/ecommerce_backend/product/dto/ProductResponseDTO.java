@@ -51,13 +51,6 @@ public class ProductResponseDTO {
 
 
     @Schema(
-            description = "Available stock quantity",
-            example = "25"
-    )
-    private Integer stockQuantity;
-
-
-    @Schema(
             description = "URL of the product image",
             example = "https://example.com/images/iphone15.jpg"
     )

@@ -34,7 +34,6 @@ public class ProductEntity {
 
     private BigDecimal price;
 
-    private Integer stockQuantity;
     private String imageUrl;
 
     @Enumerated(EnumType.STRING)

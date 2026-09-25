@@ -55,16 +55,6 @@ public class ProductRequestDTO {
 
 
     @Schema(
-            description = "Available stock quantity",
-            example = "25"
-    )
-    @NotNull(message = "Stock quantity is required.")
-    @PositiveOrZero(message = "Stock quantity cannot be negative.")
-    private Integer stockQuantity;
-
-
-
-    @Schema(
             description = "URL of the product image",
             example = "https://example.com/images/iphone15.jpg"
     )

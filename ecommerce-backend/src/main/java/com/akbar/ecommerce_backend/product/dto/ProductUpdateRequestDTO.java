@@ -37,14 +37,6 @@ public class ProductUpdateRequestDTO {
     private BigDecimal price;
 
 
-    @Min(value = 0, message = "Stock quantity cannot be negative")
-    @Schema(
-            description = "Updated stock quantity",
-            example = "25"
-    )
-    private Integer stockQuantity;
-
-
     @Schema(
             description = "Updated product image URL",
             example = "https://example.com/iphone16pro.jpg"
