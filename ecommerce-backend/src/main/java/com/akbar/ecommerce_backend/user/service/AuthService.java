@@ -12,4 +12,9 @@ public interface AuthService {
      UserResponseDTO getCurrentUser();
 
      void changePassword(ChangePasswordRequestDTO passwordRequestDTO);
+
+     LoginResponseDTO refreshToken(String refreshToken);
+
+     void logout(String refreshToken);
+
 }

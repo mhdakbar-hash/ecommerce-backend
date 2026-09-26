@@ -24,6 +24,14 @@ public class LoginResponseDTO {
     )
     private String tokenType;
 
+
+    @Schema(
+            description = "Refresh token used to obtain a new access token",
+            example = "dGhpcy1pcy1hLXJhbmRvbS1yZWZyZXNoLXRva2Vu..."
+    )
+    private String refreshToken;
+
+
     @Schema(
             description = "Unique identifier of the authenticated user",
             example = "1"

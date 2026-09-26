@@ -4,6 +4,7 @@ import com.akbar.ecommerce_backend.exception.ErrorResponse;
 import com.akbar.ecommerce_backend.user.dto.auth.ChangePasswordRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.auth.LoginRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.auth.LoginResponseDTO;
+import com.akbar.ecommerce_backend.user.dto.auth.RefreshTokenRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,6 +76,7 @@ public class AuthController {
                     schema = @Schema(implementation = ErrorResponse.class)
             ))
     })
+
     @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getCurrentUser(){
@@ -103,6 +105,7 @@ public class AuthController {
                     schema = @Schema(implementation = ErrorResponse.class)
             ))
     })
+
     @SecurityRequirement(name = "Bearer Authentication")
     @PutMapping("/change-password")
     public ResponseEntity<String> changePassword(
@@ -114,5 +117,67 @@ public class AuthController {
 
 
     }
+
+
+
+
+
+    @Operation(
+            summary = "Refresh access token",
+            description = "Generates a new JWT access token and refresh token using a valid refresh token."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Access token refreshed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "401", description = "Invalid, revoked, or expired refresh token", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class)
+            ))
+    })
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponseDTO> refreshToken(
+            @Valid @RequestBody RefreshTokenRequestDTO requestDTO){
+
+
+        return ResponseEntity.ok(authService.refreshToken(requestDTO.getRefreshToken()));
+    }
+
+
+
+
+
+
+    @Operation(
+            summary = "Logout user",
+            description = "Revokes the provided refresh token and prevents it from being used to generate new access tokens."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Logout successful"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "401", description = "Invalid or already revoked refresh token", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(
+                    schema = @Schema(implementation = ErrorResponse.class)
+            ))
+    })
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(
+            @Valid @RequestBody RefreshTokenRequestDTO requestDTO){
+
+
+        authService.logout(requestDTO.getRefreshToken());
+
+        return ResponseEntity.ok("Logout successful.");
+    }
+
 
 }

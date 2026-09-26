@@ -1,18 +1,24 @@
 package com.akbar.ecommerce_backend.user.service;
 
 import com.akbar.ecommerce_backend.exception.InvalidOldPasswordException;
+import com.akbar.ecommerce_backend.exception.InvalidRefreshTokenException;
 import com.akbar.ecommerce_backend.exception.PasswordMismatchException;
 import com.akbar.ecommerce_backend.exception.SamePasswordException;
 import com.akbar.ecommerce_backend.security.JwtService;
+import com.akbar.ecommerce_backend.security.RefreshTokenService;
 import com.akbar.ecommerce_backend.user.dto.auth.ChangePasswordRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.auth.LoginRequestDTO;
 import com.akbar.ecommerce_backend.user.dto.auth.LoginResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
+import com.akbar.ecommerce_backend.user.entity.RefreshTokenEntity;
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
+import com.akbar.ecommerce_backend.user.repository.RefreshTokenRepository;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
 import com.akbar.ecommerce_backend.user.security.CustomUserDetails;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,24 +26,25 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+
+
+    @Value("${jwt.refresh-token-expiration-days}")
+    private Long refreshTokenExpirationDays;
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public AuthServiceImpl(AuthenticationManager authenticationManager, JwtService jwtService,
-                           UserMapper userMapper, PasswordEncoder passwordEncoder, UserRepository userRepository){
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-        this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
-    }
 
 
     @Override
@@ -57,6 +64,20 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtService.generateToken(customUserDetails);
 
+        String refreshToken = refreshTokenService.generateToken();
+
+        String refreshTokenHash = refreshTokenService.hashToken(refreshToken);
+
+        RefreshTokenEntity refreshTokenEntity = RefreshTokenEntity.builder()
+                .tokenHash(refreshTokenHash)
+                .user(user)
+                .expiresAt(LocalDateTime.now().plusDays(refreshTokenExpirationDays))
+                .revoked(false)
+                .build();
+
+
+        refreshTokenRepository.save(refreshTokenEntity);
+
         log.info("User logged in successfully. User ID: {}, Email: {}",
                 user.getId(),
                 user.getEmail());
@@ -64,6 +85,7 @@ public class AuthServiceImpl implements AuthService {
         return LoginResponseDTO.builder()
                 .token(token)
                 .tokenType("Bearer")
+                .refreshToken(refreshToken)
                 .id(user.getId())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -135,6 +157,125 @@ public class AuthServiceImpl implements AuthService {
         log.info("Password changed successfully. User ID: {}, Email: {}",
                 user.getId(),
                 user.getEmail());
+
+    }
+
+
+
+
+
+    @Override
+    public LoginResponseDTO refreshToken(String refreshToken) {
+
+        log.info("Refresh token request received.");
+
+        String tokenHash = refreshTokenService.hashToken(refreshToken);
+
+        RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByTokenHash(tokenHash)
+                        .orElseThrow(() -> new InvalidRefreshTokenException(
+                                "Invalid refresh token."));
+
+
+        if (refreshTokenEntity.isRevoked()) {
+
+            throw new InvalidRefreshTokenException(
+                    "Refresh token has been revoked.");
+        }
+
+
+        if (refreshTokenEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
+
+            throw new InvalidRefreshTokenException(
+                    "Refresh token has expired.");
+        }
+
+
+        UserEntity user = refreshTokenEntity.getUser();
+
+
+        CustomUserDetails customUserDetails = new CustomUserDetails(user);
+
+
+        String newAccessToken =
+                jwtService.generateToken(customUserDetails);
+
+
+        String newRefreshToken =
+                refreshTokenService.generateToken();
+
+
+        String newRefreshTokenHash =
+                refreshTokenService.hashToken(newRefreshToken);
+
+
+        refreshTokenEntity.setRevoked(true);
+
+
+        refreshTokenRepository.save(refreshTokenEntity);
+
+
+        RefreshTokenEntity newRefreshTokenEntity =
+                RefreshTokenEntity.builder()
+                        .tokenHash(newRefreshTokenHash)
+                        .user(user)
+                        .expiresAt(LocalDateTime.now().plusDays(refreshTokenExpirationDays))
+                        .revoked(false)
+                        .build();
+
+
+        refreshTokenRepository.save(newRefreshTokenEntity);
+
+        log.info("Access token refreshed successfully. User ID: {}, Email: {}",
+                user.getId(),
+                user.getEmail());
+
+
+        return LoginResponseDTO.builder()
+                .token(newAccessToken)
+                .tokenType("Bearer")
+                .refreshToken(newRefreshToken)
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
+    }
+
+
+
+
+
+
+    @Override
+    public void logout(String refreshToken) {
+
+        log.info("Logout request received.");
+
+
+        String tokenHash = refreshTokenService.hashToken(refreshToken);
+
+
+        RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByTokenHash(tokenHash)
+                        .orElseThrow(() -> new InvalidRefreshTokenException(
+                                "Invalid refresh token."));
+
+
+        if (refreshTokenEntity.isRevoked()) {
+
+            throw new InvalidRefreshTokenException(
+                    "Refresh token has already been revoked.");
+        }
+
+
+        refreshTokenEntity.setRevoked(true);
+
+
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        log.info("User logged out successfully. User ID: {}, Email: {}",
+                refreshTokenEntity.getUser().getId(),
+                refreshTokenEntity.getUser().getEmail());
 
     }
 
