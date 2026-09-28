@@ -15,6 +15,7 @@ import com.akbar.ecommerce_backend.product.mapper.ProductMapper;
 import com.akbar.ecommerce_backend.product.repository.ProductRepository;
 import com.akbar.ecommerce_backend.product.specification.ProductSpecification;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -77,6 +78,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Cacheable(value = "products", key = "#id")
     public ProductResponseDTO getProductById(Long id) {
 
         ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.DELETED)
