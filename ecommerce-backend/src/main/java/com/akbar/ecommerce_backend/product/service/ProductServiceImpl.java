@@ -15,6 +15,7 @@ import com.akbar.ecommerce_backend.product.mapper.ProductMapper;
 import com.akbar.ecommerce_backend.product.repository.ProductRepository;
 import com.akbar.ecommerce_backend.product.specification.ProductSpecification;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -150,6 +151,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public ProductResponseDTO updateProduct(Long id, ProductUpdateRequestDTO requestDTO) {
 
         ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.DELETED)
@@ -182,6 +184,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(Long id) {
 
         ProductEntity product = productRepository.findByIdAndStatusNot(id, ProductStatus.DELETED)
@@ -204,6 +207,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @CacheEvict(value = "products", key = "#id")
     public ProductResponseDTO restoreProduct(Long id) {
 
         ProductEntity product = productRepository.findByIdAndStatus(id, ProductStatus.DELETED)

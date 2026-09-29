@@ -14,6 +14,8 @@ import com.akbar.ecommerce_backend.exception.CategoryInUseException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
 import com.akbar.ecommerce_backend.product.repository.ProductRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -127,6 +129,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @Cacheable(value = "categories", key = "#id")
     public CategoryResponseDTO getCategoryById(Long id) {
 
         CategoryEntity category = categoryRepository.findByIdAndStatusNot(id, CategoryStatus.DELETED)
@@ -144,6 +147,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @CacheEvict(value = "categories", key = "#id")
     public CategoryResponseDTO updateCategory(Long id, CategoryUpdateRequestDTO requestDTO) {
 
         CategoryEntity category = categoryRepository.findByIdAndStatusNot(id, CategoryStatus.DELETED)
@@ -178,6 +182,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @CacheEvict(value = "categories", key = "#id")
     public void deleteCategory(Long id) {
 
         CategoryEntity category = categoryRepository.findByIdAndStatusNot(id, CategoryStatus.DELETED)
@@ -210,6 +215,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @CacheEvict(value = "categories", key = "#id")
     public CategoryResponseDTO restoreCategory(Long id) {
 
         CategoryEntity category = categoryRepository.findByIdAndStatus(id, CategoryStatus.DELETED)
