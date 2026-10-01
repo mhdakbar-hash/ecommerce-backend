@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,9 @@ public class RedisCacheConfig {
 
     @Bean
     public CacheManager cacheManager(
-            RedisConnectionFactory redisConnectionFactory) {
+            RedisConnectionFactory redisConnectionFactory,
+            @Value("${app.cache.default-ttl}") Duration defaultCacheTtl) {
+
 
         ObjectMapper objectMapper = JsonMapper.builder()
                 .addModule(new JavaTimeModule())
@@ -51,7 +54,7 @@ public class RedisCacheConfig {
                                         .fromSerializer(jsonSerializer)
                         )
 
-                        .entryTtl(Duration.ofMinutes(10));
+                        .entryTtl(defaultCacheTtl);
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(cacheConfiguration)
