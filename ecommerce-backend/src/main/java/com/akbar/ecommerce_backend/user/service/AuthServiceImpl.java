@@ -12,6 +12,7 @@ import com.akbar.ecommerce_backend.user.dto.auth.LoginResponseDTO;
 import com.akbar.ecommerce_backend.user.dto.user.UserResponseDTO;
 import com.akbar.ecommerce_backend.user.entity.RefreshTokenEntity;
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
+import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import com.akbar.ecommerce_backend.user.mapper.UserMapper;
 import com.akbar.ecommerce_backend.user.repository.RefreshTokenRepository;
 import com.akbar.ecommerce_backend.user.repository.UserRepository;
@@ -25,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -114,6 +116,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Transactional
     public void changePassword(ChangePasswordRequestDTO requestDTO) {
 
         //Step 1 - get current logged-in user
@@ -165,6 +168,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Transactional
     public LoginResponseDTO refreshToken(String refreshToken) {
 
         log.info("Refresh token request received.");
@@ -191,6 +195,12 @@ public class AuthServiceImpl implements AuthService {
 
 
         UserEntity user = refreshTokenEntity.getUser();
+
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new InvalidRefreshTokenException(
+                    "User account is not active." );
+        }
 
 
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
@@ -248,6 +258,7 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
+    @Transactional
     public void logout(String refreshToken) {
 
         log.info("Logout request received.");

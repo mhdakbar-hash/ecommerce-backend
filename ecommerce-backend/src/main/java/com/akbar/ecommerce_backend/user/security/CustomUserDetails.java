@@ -2,6 +2,7 @@ package com.akbar.ecommerce_backend.user.security;
 
 
 import com.akbar.ecommerce_backend.user.entity.UserEntity;
+import com.akbar.ecommerce_backend.user.enums.UserStatus;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -37,12 +38,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.getStatus() == UserStatus.ACTIVE;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.getStatus() != UserStatus.BLOCKED;
     }
 
     @Override
