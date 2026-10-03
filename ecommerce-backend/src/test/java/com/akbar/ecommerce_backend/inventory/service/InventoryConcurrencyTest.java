@@ -58,7 +58,6 @@ class InventoryConcurrencyTest {
                 .description("Temporary product for concurrency testing")
                 .sku("CONCURRENCY-TEST-SKU")
                 .price(BigDecimal.valueOf(100))
-                .stockQuantity(5)
                 .status(ProductStatus.ACTIVE)
                 .category(category)
                 .build();
