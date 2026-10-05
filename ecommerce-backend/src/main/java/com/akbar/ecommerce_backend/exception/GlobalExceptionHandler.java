@@ -140,7 +140,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(SkuAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleSkuAlreadyExistsException(SkuAlreadyExistsException exception) {
 
-        log.warn("Product creation failed. Sku already exists: {}", exception.getMessage());
+        log.warn("Product creation failed because SKU already exists.");
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
@@ -444,7 +444,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
 
-        log.warn("Database constraint violation occurred.", ex);
+        log.warn("Database constraint violation occurred.");
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
@@ -454,6 +454,25 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(response);
+    }
+
+
+
+
+    @ExceptionHandler(InvalidPaginationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPaginationException(InvalidPaginationException exception) {
+
+        log.warn("Invalid pagination request: {}", exception.getMessage());
+
+        ErrorResponse response = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                exception.getMessage(),
+                LocalDateTime.now(),
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
 

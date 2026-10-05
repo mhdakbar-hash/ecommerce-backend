@@ -28,7 +28,7 @@ public class ProductRequestDTO {
             description = "Detailed description of the product",
             example = "Apple iPhone 15 with 128GB storage."
     )
-//    @NotBlank(message = "Product description is required.")
+    @NotBlank(message = "Product description is required.")
     @Size(min = 10, max = 2000, message = "Product description must be between 10 and 2000 characters.")
     private String description;
 

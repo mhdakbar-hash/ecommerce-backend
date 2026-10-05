@@ -13,6 +13,9 @@ import com.akbar.ecommerce_backend.exception.CategoryAlreadyExistsException;
 import com.akbar.ecommerce_backend.exception.CategoryInUseException;
 import com.akbar.ecommerce_backend.exception.ResourceNotFoundException;
 import com.akbar.ecommerce_backend.product.repository.ProductRepository;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,14 +33,16 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final ProductRepository productRepository;
+    private final CacheManager cacheManager;
 
 
     public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper,
-            ProductRepository productRepository
+            ProductRepository productRepository, CacheManager cacheManager
     ) {
         this.categoryRepository = categoryRepository;
         this.categoryMapper = categoryMapper;
         this.productRepository = productRepository;
+        this.cacheManager = cacheManager;
     }
 
 
@@ -147,6 +152,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @Transactional
     @CacheEvict(value = "categories", key = "#id")
     public CategoryResponseDTO updateCategory(Long id, CategoryUpdateRequestDTO requestDTO) {
 
@@ -164,17 +170,38 @@ public class CategoryServiceImpl implements CategoryService {
             throw new CategoryAlreadyExistsException("Category already exists with name: " + requestDTO.getName());
         }
 
+        List<Long> productIds =
+                productRepository.findProductIdsByCategoryId(id);
+
         category.setName(requestDTO.getName());
         category.setDescription(requestDTO.getDescription());
 
         CategoryEntity updatedCategory =
                 categoryRepository.save(category);
 
+
+        evictProductCaches(productIds);
+
         log.info("Category updated successfully. Category ID: {}, Name: {}",
                 updatedCategory.getId(),
                 updatedCategory.getName());
 
         return categoryMapper.toResponseDTO(updatedCategory);
+    }
+
+
+    private void evictProductCaches(List<Long> productIds) {
+
+        Cache productCache = cacheManager.getCache("products");
+
+        if (productCache == null) {
+            log.warn("Product cache not found while invalidating category-dependent caches.");
+            return;
+        }
+
+        productIds.forEach(productCache::evict);
+
+        log.debug("Evicted product caches for {} products.", productIds.size());
     }
 
 

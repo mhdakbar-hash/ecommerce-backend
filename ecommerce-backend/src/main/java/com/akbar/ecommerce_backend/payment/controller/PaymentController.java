@@ -234,7 +234,7 @@ public class PaymentController {
             @ParameterObject
             @PageableDefault(
                     page = 0,
-                    size = 20,
+                    size = 10,
                     sort = "createdAt",
                     direction = Sort.Direction.DESC
             )

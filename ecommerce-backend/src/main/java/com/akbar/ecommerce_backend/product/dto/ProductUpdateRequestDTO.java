@@ -21,7 +21,7 @@ public class ProductUpdateRequestDTO {
     private String name;
 
 
-    @Size(max = 1000, message = "Description cannot exceed 1000 characters")
+    @Size(max = 2000, message = "Description cannot exceed 1000 characters")
     @Schema(
             description = "Updated product description",
             example = "Latest Apple smartphone with A18 Pro chip"

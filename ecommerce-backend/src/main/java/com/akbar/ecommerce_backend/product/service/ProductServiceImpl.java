@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -44,11 +45,12 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Transactional
     public ProductResponseDTO createProduct(ProductRequestDTO requestDTO) {
 
         String sku = requestDTO.getSku().trim().toUpperCase();
 
-        log.info("Creating new product. Sku: {}", sku);
+        log.info("Creating product. SKU: {}", sku);
 
         if (productRepository.existsBySkuIgnoreCase(sku)) {
             throw new SkuAlreadyExistsException("Product with SKU '" + sku + "' already exists.");
@@ -151,6 +153,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Transactional
     @CacheEvict(value = "products", key = "#id")
     public ProductResponseDTO updateProduct(Long id, ProductUpdateRequestDTO requestDTO) {
 
@@ -184,6 +187,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Transactional
     @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(Long id) {
 
@@ -207,6 +211,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
+    @Transactional
     @CacheEvict(value = "products", key = "#id")
     public ProductResponseDTO restoreProduct(Long id) {
 
