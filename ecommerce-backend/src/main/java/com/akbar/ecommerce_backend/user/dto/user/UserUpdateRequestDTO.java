@@ -2,6 +2,7 @@ package com.akbar.ecommerce_backend.user.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -37,6 +38,10 @@ public class UserUpdateRequestDTO {
             example = "9876543210"
     )
     @NotBlank(message = "Phone number is required.")
+    @Pattern(
+            regexp = "^\\d{10}$",
+            message = "Phone number must be exactly 10 digits."
+    )
     private String phoneNumber;
 
 }

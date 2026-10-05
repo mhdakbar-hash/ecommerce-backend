@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponse> handleEmailAlreadyExistsException(EmailAlreadyExistsException ex){
 
-        log.warn("Registration failed. Email already exists: {}", ex.getMessage());
+        log.warn("Registration failed because the email already exists.");
 
         ErrorResponse response = new ErrorResponse();
 

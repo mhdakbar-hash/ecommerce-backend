@@ -45,7 +45,7 @@ public class UserServiceImpl implements UserService {
 
         String email = requestDTO.getEmail().trim().toLowerCase();
 
-        log.info("Registering new user with email: {}", requestDTO.getEmail());
+        log.info("User registration requested.");
 
         if (userRepository.findByEmailIgnoreCase(email).isPresent()) {
             throw new EmailAlreadyExistsException("Email already exists.");
@@ -60,8 +60,7 @@ public class UserServiceImpl implements UserService {
 
         UserEntity savedUser = userRepository.save(user);
 
-        log.info("User registered successfully. User ID: {}, Email: {}",
-                savedUser.getId(), savedUser.getEmail());
+        log.info("User registered successfully. User ID: {}", savedUser.getId());
 
         return userMapper.toResponseDTO(savedUser);
     }
@@ -138,66 +137,65 @@ public class UserServiceImpl implements UserService {
     }
 
 
+        @Override
+        @Transactional
+        public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO requestDTO) {
+
+            UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
+                    .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
+
+            log.info("Updating user. User ID: {}", id);
+
+            user.setFirstName(requestDTO.getFirstName());
+            user.setLastName(requestDTO.getLastName());
+            user.setPhoneNumber(requestDTO.getPhoneNumber());
+
+            userRepository.save(user);
+
+            log.info(
+                    "User updated successfully. User ID: {}",
+                    user.getId());
+
+            return userMapper.toResponseDTO(user);
+
+        }
+
+
+
     @Override
-    public UserResponseDTO updateUser(Long id, UserUpdateRequestDTO requestDTO) {
-
-        UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
-                .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
-
-        log.info("Updating user. User ID: {}", id);
-
-        user.setFirstName(requestDTO.getFirstName());
-        user.setLastName(requestDTO.getLastName());
-        user.setPhoneNumber(requestDTO.getPhoneNumber());
-
-        userRepository.save(user);
-
-        log.info(
-                "User updated successfully. User ID: {}",
-                user.getId());
-
-        return userMapper.toResponseDTO(user);
-
-    }
-
-
-
-    @Override
+    @Transactional
     public void deleteUser(Long id) {
 
         UserEntity user = userRepository.findByIdAndStatusNot(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
-        log.info("Soft delete requested. User ID: {}, Email: {}",
-                user.getId(),
-                user.getEmail());
+
+        log.info("Soft delete requested. User ID: {}", user.getId());
 
         user.setStatus(UserStatus.DELETED);
 
         userRepository.save(user);
 
-        log.info("User soft deleted successfully. User ID: {}, Email: {}",
-                user.getId(),
-                user.getEmail());
+        log.info("User soft deleted successfully. User ID: {}", user.getId());
 
     }
 
 
     @Override
+    @Transactional
     public UserResponseDTO restoreUser(Long id) {
 
         UserEntity user = userRepository.findByIdAndStatus(id, UserStatus.DELETED)
                 .orElseThrow(()-> new ResourceNotFoundException("No user found with id: " + id));
 
-        log.info("Restore requested. User ID: {}, Email: {}",
-                user.getId(), user.getEmail());
+
+        log.info("Restore requested. User ID: {}", user.getId());
 
         user.setStatus(UserStatus.ACTIVE);
 
         UserEntity savedUser = userRepository.save(user);
 
-        log.info("User restored successfully. User ID: {}, Email: {}",
-                savedUser.getId(), savedUser.getEmail());
+        log.info("User restored successfully. User ID: {}", savedUser.getId());
 
         return userMapper.toResponseDTO(savedUser);
 
