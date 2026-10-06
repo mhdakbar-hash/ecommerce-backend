@@ -41,6 +41,7 @@ public class InventoryServiceImpl implements InventoryService {
 
 
     @Override
+    @Transactional
     public InventoryResponseDTO createInventory(InventoryRequestDTO requestDTO) {
 
         log.info("Creating inventory. Product ID: {}",
@@ -164,6 +165,7 @@ public class InventoryServiceImpl implements InventoryService {
 
 
     @Override
+    @Transactional
     public InventoryResponseDTO updateInventory(Long id, InventoryUpdateRequestDTO requestDTO) {
 
         log.debug("Updating inventory. Inventory ID: {}, New available quantity: {}",
@@ -171,7 +173,7 @@ public class InventoryServiceImpl implements InventoryService {
                 requestDTO.getAvailableQuantity());
 
 
-        InventoryEntity inventory = inventoryRepository.findById(id)
+        InventoryEntity inventory = inventoryRepository.findByIdForUpdate(id)
                         .orElseThrow(() -> new ResourceNotFoundException("No inventory found with id: " + id));
 
 
@@ -193,13 +195,14 @@ public class InventoryServiceImpl implements InventoryService {
 
 
     @Override
+    @Transactional
     public InventoryResponseDTO addStock(Long id, InventoryStockRequestDTO requestDTO) {
 
         log.debug("Adding stock. Inventory ID: {}, Quantity: {}",
                 id,
                 requestDTO.getQuantity());
 
-        InventoryEntity inventory = inventoryRepository.findById(id)
+        InventoryEntity inventory = inventoryRepository.findByIdForUpdate(id)
                         .orElseThrow(() -> new ResourceNotFoundException("No inventory found with id: " + id));
 
 
@@ -223,13 +226,14 @@ public class InventoryServiceImpl implements InventoryService {
 
 
     @Override
+    @Transactional
     public InventoryResponseDTO removeStock(Long id, InventoryStockRequestDTO requestDTO) {
 
         log.debug("Removing stock. Inventory ID: {}, Quantity: {}",
                 id,
                 requestDTO.getQuantity());
 
-        InventoryEntity inventory = inventoryRepository.findById(id)
+        InventoryEntity inventory = inventoryRepository.findByIdForUpdate(id)
                         .orElseThrow(() -> new ResourceNotFoundException("No inventory found with id: " + id));
 
 

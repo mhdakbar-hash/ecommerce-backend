@@ -10,7 +10,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -28,8 +29,10 @@ public class InventoryEntity {
     private ProductEntity product;
 
 
+    @Column(nullable = false)
     private Integer availableQuantity;
 
+    @Column(nullable = false)
     private Integer reservedQuantity;
 
     @CreationTimestamp
