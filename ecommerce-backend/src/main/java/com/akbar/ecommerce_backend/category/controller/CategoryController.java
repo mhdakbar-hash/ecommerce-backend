@@ -71,7 +71,7 @@ public class CategoryController {
     public ResponseEntity<CategoryResponseDTO> createCategory(@Valid @RequestBody CategoryRequestDTO requestDTO) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(categoryService.createCategoty(requestDTO));
+                .body(categoryService.createCategory(requestDTO));
     }
 
 

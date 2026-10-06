@@ -49,16 +49,22 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
-    public CategoryResponseDTO createCategoty(CategoryRequestDTO requestDTO) {
+    @Transactional
+    public CategoryResponseDTO createCategory(CategoryRequestDTO requestDTO) {
 
         log.info("Creating category. Name: {}", requestDTO.getName());
 
-        if (categoryRepository.existsByNameIgnoreCase(requestDTO.getName())) {
-            throw new CategoryAlreadyExistsException("Category already exists with name: " + requestDTO.getName());
+        String categoryName = requestDTO.getName().trim();
+
+        if (categoryRepository.existsByNameIgnoreCase(categoryName)) {
+            throw new CategoryAlreadyExistsException(
+                    "Category already exists with name: " + categoryName
+            );
         }
 
         CategoryEntity category = categoryMapper.toEntity(requestDTO);
 
+        category.setName(categoryName);
         category.setStatus(CategoryStatus.ACTIVE);
 
         CategoryEntity savedCategory =
@@ -164,16 +170,20 @@ public class CategoryServiceImpl implements CategoryService {
                 category.getId(),
                 category.getName());
 
-        if (categoryRepository.existsByNameIgnoreCaseAndIdNot(
-                requestDTO.getName(), id)) {
 
-            throw new CategoryAlreadyExistsException("Category already exists with name: " + requestDTO.getName());
+        String categoryName = requestDTO.getName().trim();
+
+        if (categoryRepository.existsByNameIgnoreCaseAndIdNot(
+                categoryName, id)) {
+
+            throw new CategoryAlreadyExistsException(
+                    "Category already exists with name: " + requestDTO.getName());
         }
 
         List<Long> productIds =
                 productRepository.findProductIdsByCategoryId(id);
 
-        category.setName(requestDTO.getName());
+        category.setName(categoryName);
         category.setDescription(requestDTO.getDescription());
 
         CategoryEntity updatedCategory =
@@ -209,6 +219,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @Transactional
     @CacheEvict(value = "categories", key = "#id")
     public void deleteCategory(Long id) {
 
@@ -242,6 +253,7 @@ public class CategoryServiceImpl implements CategoryService {
 
 
     @Override
+    @Transactional
     @CacheEvict(value = "categories", key = "#id")
     public CategoryResponseDTO restoreCategory(Long id) {
 

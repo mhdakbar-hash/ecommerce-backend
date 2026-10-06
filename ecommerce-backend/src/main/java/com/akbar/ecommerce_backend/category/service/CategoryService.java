@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 public interface CategoryService {
 
 
-    CategoryResponseDTO createCategoty(CategoryRequestDTO requestDTO);
+    CategoryResponseDTO createCategory(CategoryRequestDTO requestDTO);
 
     PageResponseDTO<CategoryResponseDTO> getAllCategories(String keyword, CategoryStatus status, Pageable pageable);
 
