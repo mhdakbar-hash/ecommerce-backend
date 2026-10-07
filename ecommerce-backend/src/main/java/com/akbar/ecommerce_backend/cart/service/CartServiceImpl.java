@@ -53,8 +53,8 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("No user found with email: " + email));
 
         
-        ProductEntity product = productRepository.findByIdAndStatusNot(requestDTO.getProductId(),
-                        ProductStatus.DELETED)
+        ProductEntity product = productRepository.findByIdAndStatus(requestDTO.getProductId(),
+                        ProductStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("No product found with id: "
                                         + requestDTO.getProductId()));
 
