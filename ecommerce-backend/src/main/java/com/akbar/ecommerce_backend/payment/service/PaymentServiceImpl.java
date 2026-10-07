@@ -336,14 +336,14 @@ public class PaymentServiceImpl implements PaymentService {
                 email);
 
         UserEntity user = userRepository.findByEmailIgnoreCase(email)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                        "No user found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No user found with email: " + email));
 
 
         PaymentEntity payment = paymentRepository.findByIdAndOrderUserId(
-                id, user.getId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                        "No payment found with id: " + id));
+                        id, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No payment found with id: " + id));
 
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
@@ -372,7 +372,20 @@ public class PaymentServiceImpl implements PaymentService {
                 paymentGateway.refundPayment(payment);
 
 
-        payment.setStatus(gatewayResponse.getStatus());
+        if (gatewayResponse.getStatus() != PaymentStatus.REFUNDED) {
+
+            log.warn("Payment refund failed at gateway. Payment ID: {}, Order ID: {}, Gateway Status: {}",
+                    payment.getId(),
+                    order.getId(),
+                    gatewayResponse.getStatus());
+
+            throw new PaymentRefundException(
+                    "Payment refund failed. Gateway status: "
+                            + gatewayResponse.getStatus());
+        }
+
+
+        payment.setStatus(PaymentStatus.REFUNDED);
 
         payment.setRefundReference(
                 gatewayResponse.getTransactionReference());
@@ -395,8 +408,8 @@ public class PaymentServiceImpl implements PaymentService {
         for (OrderItemEntity orderItem : orderItems) {
 
             Long productId = orderItem
-                            .getProduct()
-                            .getId();
+                    .getProduct()
+                    .getId();
 
             Integer quantity = orderItem.getQuantity();
 
@@ -420,16 +433,6 @@ public class PaymentServiceImpl implements PaymentService {
         return paymentMapper.toPaymentResponseDTO(updatedPayment);
 
     }
-
-
-
-
-
-
-
-
-
-
 
 
 }

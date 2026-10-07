@@ -4,10 +4,7 @@ import com.akbar.ecommerce_backend.order.entity.OrderEntity;
 import com.akbar.ecommerce_backend.payment.enums.PaymentMethod;
 import com.akbar.ecommerce_backend.payment.enums.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,11 +12,21 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "payments")
+
+@Table(
+        name = "payments",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_payments_order_id",
+                        columnNames = "order_id"
+                )
+        }
+)
 public class PaymentEntity {
 
     @Id
@@ -32,18 +39,23 @@ public class PaymentEntity {
     private OrderEntity order;
 
 
+    @Column(nullable = false, precision = 38, scale = 2)
     private BigDecimal amount;
 
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentStatus status;
 
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentMethod paymentMethod;
 
+    @Column(length = 255)
     private String transactionReference;
 
+    @Column(length = 255)
     private String refundReference;
 
     @CreationTimestamp
