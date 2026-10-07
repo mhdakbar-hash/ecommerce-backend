@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -26,18 +27,20 @@ public class OrderEntity {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String orderNumber;
 
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus status;
 
 
+    @Column(nullable = false, precision = 38, scale = 2)
     private BigDecimal totalAmount;
 
 
