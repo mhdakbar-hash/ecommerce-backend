@@ -9,6 +9,7 @@ import com.akbar.ecommerce_backend.payment.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(
         name = "Payment Management",
-        description = "APIs for managing Payments"
+        description = "APIs for initiating, retrieving, retrying, and refunding payments"
 )
 
 public class PaymentController {
@@ -48,6 +49,7 @@ public class PaymentController {
                     responseCode = "201",
                     description = "Payment initiated successfully",
                     content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(
                                     implementation = PaymentResponseDTO.class
                             )
@@ -57,8 +59,19 @@ public class PaymentController {
                     responseCode = "400",
                     description = "Invalid payment request",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Validation failed",
+                                              "timeStamp": "2026-07-27T14:20:15",
+                                              "errors": {
+                                                "paymentMethod": "Payment method is required"
+                                              }
+                                            }
+                                            """
                             )
                     )
             ),
@@ -66,8 +79,16 @@ public class PaymentController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -75,26 +96,33 @@ public class PaymentController {
                     responseCode = "404",
                     description = "User or order not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Order not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
             @ApiResponse(
                     responseCode = "409",
-                    description = "Payment cannot be initiated for the current order state",
+                    description = "Payment cannot be initiated for the current order state or payment processing failed",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 409,
+                                              "message": "Payment cannot be initiated for the current order state",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -128,6 +156,7 @@ public class PaymentController {
                     responseCode = "200",
                     description = "Payment fetched successfully",
                     content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(
                                     implementation = PaymentResponseDTO.class
                             )
@@ -137,8 +166,16 @@ public class PaymentController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -146,17 +183,16 @@ public class PaymentController {
                     responseCode = "404",
                     description = "Payment or user not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Payment not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -193,8 +229,26 @@ public class PaymentController {
                     responseCode = "200",
                     description = "Payments fetched successfully",
                     content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(
                                     implementation = PageResponseDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid pagination or sort parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Invalid sort field: invalidField",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -202,8 +256,16 @@ public class PaymentController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -211,17 +273,16 @@ public class PaymentController {
                     responseCode = "404",
                     description = "User not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "User not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -260,6 +321,7 @@ public class PaymentController {
                     responseCode = "200",
                     description = "Payment retry processed successfully",
                     content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(
                                     implementation = PaymentResponseDTO.class
                             )
@@ -269,8 +331,19 @@ public class PaymentController {
                     responseCode = "400",
                     description = "Invalid retry request",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Validation failed",
+                                              "timeStamp": "2026-07-27T14:20:15",
+                                              "errors": {
+                                                "paymentMethod": "Payment method is required"
+                                              }
+                                            }
+                                            """
                             )
                     )
             ),
@@ -278,8 +351,16 @@ public class PaymentController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -287,8 +368,16 @@ public class PaymentController {
                     responseCode = "404",
                     description = "Payment or user not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Payment not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -296,17 +385,16 @@ public class PaymentController {
                     responseCode = "409",
                     description = "Payment cannot be retried in its current state",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 409,
+                                              "message": "Payment cannot be retried in its current state",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -346,6 +434,7 @@ public class PaymentController {
                     responseCode = "200",
                     description = "Payment refunded successfully",
                     content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(
                                     implementation = PaymentResponseDTO.class
                             )
@@ -355,8 +444,16 @@ public class PaymentController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -364,8 +461,16 @@ public class PaymentController {
                     responseCode = "404",
                     description = "Payment or user not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Payment not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -373,17 +478,16 @@ public class PaymentController {
                     responseCode = "409",
                     description = "Payment cannot be refunded in its current state",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 409,
+                                              "message": "Payment cannot be refunded in its current state",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )

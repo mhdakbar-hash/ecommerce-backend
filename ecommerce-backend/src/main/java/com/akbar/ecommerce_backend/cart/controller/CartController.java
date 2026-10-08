@@ -6,6 +6,7 @@ import com.akbar.ecommerce_backend.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(
         name = "Cart Management",
-        description = "APIs for managing Cart"
+        description = "APIs for managing the authenticated user's shopping cart"
 )
 
 public class CartController {
@@ -38,14 +40,31 @@ public class CartController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Product added to cart successfully"
+                    description = "Product added to cart successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = CartItemResponseDTO.class
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request payload",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Validation failed",
+                                              "timeStamp": "2026-07-27T14:20:15",
+                                              "errors": {
+                                                "quantity": "Quantity must be greater than 0"
+                                              }
+                                            }
+                                            """
                             )
                     )
             ),
@@ -53,8 +72,16 @@ public class CartController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -62,17 +89,16 @@ public class CartController {
                     responseCode = "404",
                     description = "Product or user not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Product not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -102,14 +128,28 @@ public class CartController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Cart retrieved successfully"
+                    description = "Cart retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = CartResponseDTO.class
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -117,17 +157,16 @@ public class CartController {
                     responseCode = "404",
                     description = "User or cart not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Cart not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -155,14 +194,31 @@ public class CartController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Cart item quantity updated successfully"
+                    description = "Cart item quantity updated successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = CartItemResponseDTO.class
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "Invalid request payload or cart item ID",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Validation failed",
+                                              "timeStamp": "2026-07-27T14:20:15",
+                                              "errors": {
+                                                "quantity": "Quantity must be greater than 0"
+                                              }
+                                            }
+                                            """
                             )
                     )
             ),
@@ -170,8 +226,16 @@ public class CartController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -179,19 +243,19 @@ public class CartController {
                     responseCode = "404",
                     description = "Cart item not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Cart item not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    ))
+            )
     })
 
     @SecurityRequirement(name = "Bearer Authentication")
@@ -227,14 +291,29 @@ public class CartController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "204",
-                    description = "Cart item removed successfully"
+                    description = "Cart item removed successfully",
+                    content = @Content(
+                            mediaType = MediaType.TEXT_PLAIN_VALUE,
+                            schema = @Schema(
+                                    type = "string",
+                                    example = "Cart item removed successfully."
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -242,17 +321,16 @@ public class CartController {
                     responseCode = "404",
                     description = "Cart item not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Cart item not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -288,14 +366,30 @@ public class CartController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "204",
-                    description = "Cart cleared successfully"
+                    description = "Cart cleared successfully",
+                    content = @Content(
+                            mediaType = MediaType.TEXT_PLAIN_VALUE,
+                            schema = @Schema(
+                                    type = "string",
+                                    example = "Cart cleared successfully."
+                            )
+                    )
+
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -303,17 +397,16 @@ public class CartController {
                     responseCode = "404",
                     description = "Cart not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Cart not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -342,14 +435,28 @@ public class CartController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Cart item count retrieved successfully"
+                    description = "Cart item count retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = CartCountResponseDTO.class
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -357,19 +464,19 @@ public class CartController {
                     responseCode = "404",
                     description = "Cart not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Cart not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    ))
+            )
     })
 
     @SecurityRequirement(name = "Bearer Authentication")

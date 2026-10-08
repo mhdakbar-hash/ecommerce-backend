@@ -9,6 +9,7 @@ import com.akbar.ecommerce_backend.order.service.AdminOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -50,14 +51,45 @@ public class AdminOrderController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Orders fetched successfully"
+                    description = "Orders fetched successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = PageResponseDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid pagination, sorting, filter, or date/time parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Invalid sort field: invalidField",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -65,8 +97,16 @@ public class AdminOrderController {
                     responseCode = "403",
                     description = "Admin access required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 403,
+                                              "message": "Access denied.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -162,8 +202,16 @@ public class AdminOrderController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -171,8 +219,16 @@ public class AdminOrderController {
                     responseCode = "403",
                     description = "Admin access required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 403,
+                                              "message": "Access denied.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -180,8 +236,16 @@ public class AdminOrderController {
                     responseCode = "404",
                     description = "Order not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Order not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -227,8 +291,19 @@ public class AdminOrderController {
                     responseCode = "400",
                     description = "Invalid request",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Validation failed",
+                                              "timeStamp": "2026-07-27T14:20:15",
+                                              "errors": {
+                                                "status": "Status is required"
+                                              }
+                                            }
+                                            """
                             )
                     )
             ),
@@ -236,8 +311,16 @@ public class AdminOrderController {
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -245,8 +328,16 @@ public class AdminOrderController {
                     responseCode = "403",
                     description = "Admin access required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 403,
+                                              "message": "Access denied.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -254,8 +345,16 @@ public class AdminOrderController {
                     responseCode = "404",
                     description = "Order not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Order not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -263,10 +362,19 @@ public class AdminOrderController {
                     responseCode = "409",
                     description = "Invalid order status transition",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 409,
+                                              "message": "Invalid order status transition",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
-                    ))
+                    )
+            )
     })
 
     @SecurityRequirement(name = "Bearer Authentication")

@@ -7,6 +7,7 @@ import com.akbar.ecommerce_backend.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -26,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(
         name = "Order Management",
-        description = "APIs for managing Orders"
+        description = "APIs for creating, retrieving, and cancelling orders"
 )
 
 public class OrderController {
@@ -42,14 +43,28 @@ public class OrderController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
-                    description = "Order created successfully"
+                    description = "Order created successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = OrderResponseDTO.class
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -57,8 +72,16 @@ public class OrderController {
                     responseCode = "404",
                     description = "User, cart, or inventory not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Cart not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -66,18 +89,19 @@ public class OrderController {
                     responseCode = "409",
                     description = "Cart is empty or inventory stock is insufficient",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 409,
+                                              "message": "Cart is empty",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )))
+            )
     })
 
     @SecurityRequirement(name = "Bearer Authentication")
@@ -102,14 +126,45 @@ public class OrderController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Orders retrieved successfully"
+                    description = "Orders retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = PageResponseDTO.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid pagination or sort parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 400,
+                                              "message": "Invalid sort field: invalidField",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -117,17 +172,16 @@ public class OrderController {
                     responseCode = "404",
                     description = "User not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "User not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -164,14 +218,28 @@ public class OrderController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Order retrieved successfully"
+                    description = "Order retrieved successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = OrderResponseDTO.class
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -179,17 +247,16 @@ public class OrderController {
                     responseCode = "404",
                     description = "Order or user not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Order not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
@@ -221,14 +288,25 @@ public class OrderController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Order cancelled successfully"
+                    description = "Order cancelled successfully",
+                    content = @Content(
+                            mediaType = "application/json"
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
                     description = "Authentication required",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 401,
+                                              "message": "Authentication is required.",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -236,8 +314,16 @@ public class OrderController {
                     responseCode = "404",
                     description = "User or order not found",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 404,
+                                              "message": "Order not found",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             ),
@@ -245,17 +331,16 @@ public class OrderController {
                     responseCode = "409",
                     description = "Order cannot be cancelled in its current state",
                     content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
-                            )
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Internal server error",
-                    content = @Content(
-                            schema = @Schema(
-                                    implementation = ErrorResponse.class
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                              "status": 409,
+                                              "message": "Order cannot be cancelled in its current state",
+                                              "timeStamp": "2026-07-27T14:20:15"
+                                            }
+                                            """
                             )
                     )
             )
