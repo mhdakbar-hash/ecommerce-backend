@@ -55,6 +55,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import org.mockito.Mockito;
+import java.util.concurrent.TimeUnit;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -1282,4 +1287,291 @@ class PaymentControllerIntegrationTest {
         assertThat(unchangedInventory.getReservedQuantity())
                 .isEqualTo(2);
     }
+
+
+
+
+    // Concurrency Test
+
+    @Test
+    void shouldPreventConcurrentRetryOfSameFailedPayment()
+            throws Exception {
+
+        UserEntity customer = createCustomer();
+        String token = getCustomerToken(customer);
+
+        CategoryEntity category = createCategory();
+        ProductEntity product = createProduct(category);
+        createInventory(product);
+        createCartItem(customer, product, 2);
+
+        String orderResponse = mockMvc.perform(
+                        post("/api/v1/orders")
+                                .header("Authorization", "Bearer " + token)
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        OrderResponseDTO createdOrder =
+                objectMapper.readValue(orderResponse, OrderResponseDTO.class);
+
+        Long orderId = createdOrder.getId();
+
+        String paymentResponse = mockMvc.perform(
+                        post("/api/v1/payments")
+                                .header("Authorization", "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                {
+                                    "orderId": %d,
+                                    "paymentMethod": "CARD"
+                                }
+                                """.formatted(orderId))
+                )
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PaymentResponseDTO failedPayment =
+                objectMapper.readValue(paymentResponse, PaymentResponseDTO.class);
+
+        Long paymentId = failedPayment.getId();
+
+        assertThat(failedPayment.getStatus())
+                .isEqualTo(PaymentStatus.FAILED);
+
+        CountDownLatch gatewayEntered = new CountDownLatch(1);
+        CountDownLatch allowGatewayToFinish = new CountDownLatch(1);
+
+        Mockito.doAnswer(invocation -> {
+
+            gatewayEntered.countDown();
+
+            if (!allowGatewayToFinish.await(10, TimeUnit.SECONDS)) {
+                throw new IllegalStateException(
+                        "Timed out waiting to finish mock gateway call");
+            }
+
+            return new PaymentGatewayResponse(
+                    PaymentStatus.SUCCESS,
+                    "MOCK-CONCURRENT-RETRY-" + UUID.randomUUID()
+            );
+        }).when(paymentGateway).processPayment(any(PaymentEntity.class));
+
+        String retryRequest = """
+        {
+            "paymentMethod": "UPI"
+        }
+        """;
+
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        CountDownLatch startLatch = new CountDownLatch(1);
+
+        try {
+            Future<Integer> firstRequest = executorService.submit(() -> {
+                startLatch.await();
+
+                return mockMvc.perform(
+                                post("/api/v1/payments/{id}/retry", paymentId)
+                                        .header("Authorization", "Bearer " + token)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(retryRequest)
+                        )
+                        .andReturn()
+                        .getResponse()
+                        .getStatus();
+            });
+
+            Future<Integer> secondRequest = executorService.submit(() -> {
+                startLatch.await();
+
+                return mockMvc.perform(
+                                post("/api/v1/payments/{id}/retry", paymentId)
+                                        .header("Authorization", "Bearer " + token)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(retryRequest)
+                        )
+                        .andReturn()
+                        .getResponse()
+                        .getStatus();
+            });
+
+            startLatch.countDown();
+
+            assertThat(gatewayEntered.await(5, TimeUnit.SECONDS))
+                    .as("One retry request should reach the gateway")
+                    .isTrue();
+
+            // Keep the first gateway call in progress while the other request starts.
+            Thread.sleep(200);
+
+            allowGatewayToFinish.countDown();
+
+            List<Integer> statuses = List.of(
+                    firstRequest.get(15, TimeUnit.SECONDS),
+                    secondRequest.get(15, TimeUnit.SECONDS)
+            );
+
+            assertThat(statuses)
+                    .containsExactlyInAnyOrder(200, 409);
+
+            verify(paymentGateway, times(2))
+                    .processPayment(any(PaymentEntity.class));
+
+            PaymentEntity finalPayment =
+                    paymentRepository.findById(paymentId).orElseThrow();
+
+            assertThat(finalPayment.getStatus())
+                    .isEqualTo(PaymentStatus.SUCCESS);
+
+            assertThat(finalPayment.getPaymentMethod())
+                    .isEqualTo(com.akbar.ecommerce_backend.payment.enums.PaymentMethod.UPI);
+
+            OrderEntity finalOrder =
+                    orderRepository.findById(orderId).orElseThrow();
+
+            assertThat(finalOrder.getStatus())
+                    .isEqualTo(OrderStatus.CONFIRMED);
+
+            assertThat(paymentRepository.existsByOrderId(orderId))
+                    .isTrue();
+
+        } finally {
+            allowGatewayToFinish.countDown();
+            executorService.shutdownNow();
+        }
+    }
+
+
+
+
+
+    @Test
+    void shouldPreventConcurrentRefundOfSamePayment() throws Exception {
+        UserEntity customer = createCustomer();
+        String token = getCustomerToken(customer);
+
+        CategoryEntity category = createCategory();
+        ProductEntity product = createProduct(category);
+        createInventory(product);
+        createCartItem(customer, product, 2);
+
+        String orderResponse = mockMvc.perform(post("/api/v1/orders")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        OrderResponseDTO createdOrder =
+                objectMapper.readValue(orderResponse, OrderResponseDTO.class);
+
+        Long orderId = createdOrder.getId();
+
+        String paymentResponse = mockMvc.perform(post("/api/v1/payments")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "orderId": %d,
+                                "paymentMethod": "UPI"
+                            }
+                            """.formatted(orderId)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        PaymentResponseDTO successfulPayment =
+                objectMapper.readValue(paymentResponse, PaymentResponseDTO.class);
+
+        Long paymentId = successfulPayment.getId();
+
+        assertThat(successfulPayment.getStatus())
+                .isEqualTo(PaymentStatus.SUCCESS);
+
+        CountDownLatch gatewayEntered = new CountDownLatch(1);
+        CountDownLatch allowGatewayToFinish = new CountDownLatch(1);
+
+        Mockito.doAnswer(invocation -> {
+            gatewayEntered.countDown();
+
+            if (!allowGatewayToFinish.await(10, TimeUnit.SECONDS)) {
+                throw new IllegalStateException(
+                        "Timed out waiting to finish mock refund gateway call");
+            }
+
+            return new PaymentGatewayResponse(
+                    PaymentStatus.REFUNDED,
+                    "MOCK-CONCURRENT-REFUND-" + UUID.randomUUID());
+        }).when(paymentGateway).refundPayment(any(PaymentEntity.class));
+
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        CountDownLatch startLatch = new CountDownLatch(1);
+
+        try {
+            Future<Integer> firstRequest = executorService.submit(() -> {
+                startLatch.await();
+
+                return mockMvc.perform(post("/api/v1/payments/{id}/refund", paymentId)
+                                .header("Authorization", "Bearer " + token))
+                        .andReturn()
+                        .getResponse()
+                        .getStatus();
+            });
+
+            Future<Integer> secondRequest = executorService.submit(() -> {
+                startLatch.await();
+
+                return mockMvc.perform(post("/api/v1/payments/{id}/refund", paymentId)
+                                .header("Authorization", "Bearer " + token))
+                        .andReturn()
+                        .getResponse()
+                        .getStatus();
+            });
+
+            startLatch.countDown();
+
+            assertThat(gatewayEntered.await(5, TimeUnit.SECONDS))
+                    .as("One refund request should reach the gateway")
+                    .isTrue();
+
+            Thread.sleep(200);
+            allowGatewayToFinish.countDown();
+
+            List<Integer> statuses = List.of(
+                    firstRequest.get(15, TimeUnit.SECONDS),
+                    secondRequest.get(15, TimeUnit.SECONDS));
+
+            assertThat(statuses)
+                    .containsExactlyInAnyOrder(200, 409);
+
+            verify(paymentGateway, times(1))
+                    .refundPayment(any(PaymentEntity.class));
+
+            PaymentEntity finalPayment =
+                    paymentRepository.findById(paymentId).orElseThrow();
+
+            assertThat(finalPayment.getStatus())
+                    .isEqualTo(PaymentStatus.REFUNDED);
+
+            assertThat(finalPayment.getRefundReference())
+                    .startsWith("MOCK-CONCURRENT-REFUND-");
+
+            OrderEntity finalOrder =
+                    orderRepository.findById(orderId).orElseThrow();
+
+            assertThat(finalOrder.getStatus())
+                    .isEqualTo(OrderStatus.REFUNDED);
+
+        } finally {
+            allowGatewayToFinish.countDown();
+            executorService.shutdownNow();
+        }
+    }
+
+
 }

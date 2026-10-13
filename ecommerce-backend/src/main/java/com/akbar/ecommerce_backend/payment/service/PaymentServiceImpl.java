@@ -241,17 +241,37 @@ public class PaymentServiceImpl implements PaymentService {
         String email = authentication.getName();
 
         log.info("Retrying payment. Payment ID: {}, User email: {}",
-                id,
-                email);
+                id, email);
+
 
         UserEntity user = userRepository.findByEmailIgnoreCase(email)
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                        "No user found with email: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No user found with email: " + email));
 
 
-        PaymentEntity payment = paymentRepository.findByIdAndOrderUserId(id, user.getId())
-                        .orElseThrow(() -> new ResourceNotFoundException(
-                                        "No payment found with id: " + id));
+        PaymentEntity initialPayment = paymentRepository.findByIdAndOrderUserId(id, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No payment found with id: " + id));
+
+
+        Long orderId = initialPayment.getOrder().getId();
+
+
+        OrderEntity order = orderRepository.findByIdAndUserIdForUpdate(orderId, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No order found with id: " + orderId));
+
+
+        PaymentEntity payment = paymentRepository.findByIdAndOrderUserIdForUpdate(id, user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No payment found with id: " + id));
+
+
+        if (!payment.getOrder().getId().equals(order.getId())) {
+
+            throw new PaymentRetryException(
+                    "Payment does not belong to the requested order.");
+        }
 
 
         if (payment.getStatus() != PaymentStatus.FAILED) {
@@ -262,9 +282,6 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
 
-        OrderEntity order = payment.getOrder();
-
-
         if (order.getStatus() != OrderStatus.PENDING) {
 
             throw new PaymentRetryException(
@@ -273,25 +290,20 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
 
-        payment.setPaymentMethod(
-                requestDTO.getPaymentMethod());
-
+        payment.setPaymentMethod(requestDTO.getPaymentMethod());
 
         log.debug("Processing payment retry through gateway. Payment ID: {}, Order ID: {}, Payment Method: {}",
-                payment.getId(),
-                order.getId(),
-                payment.getPaymentMethod());
+                payment.getId(), order.getId(), payment.getPaymentMethod());
 
 
         PaymentGatewayResponse gatewayResponse =
                 paymentGateway.processPayment(payment);
 
-
-        payment.setStatus(
-                gatewayResponse.getStatus());
+        payment.setStatus(gatewayResponse.getStatus());
 
         payment.setTransactionReference(
                 gatewayResponse.getTransactionReference());
+
 
         if (gatewayResponse.getStatus() == PaymentStatus.SUCCESS) {
 
@@ -300,12 +312,10 @@ public class PaymentServiceImpl implements PaymentService {
             orderRepository.save(order);
 
             log.info("Order confirmed after successful payment retry. Order ID: {}",
-                    order.getId());}
+                    order.getId());
+        }
 
-
-        PaymentEntity updatedPayment =
-                paymentRepository.save(payment);
-
+        PaymentEntity updatedPayment = paymentRepository.save(payment);
 
         log.info("Payment retry processed. Payment ID: {}, Order ID: {}, Status: {}, Transaction Reference: {}",
                 updatedPayment.getId(),
@@ -314,7 +324,6 @@ public class PaymentServiceImpl implements PaymentService {
                 updatedPayment.getTransactionReference());
 
         return paymentMapper.toPaymentResponseDTO(updatedPayment);
-
     }
 
 
@@ -332,18 +341,38 @@ public class PaymentServiceImpl implements PaymentService {
         String email = authentication.getName();
 
         log.info("Refunding payment. Payment ID: {}, User email: {}",
-                id,
-                email);
+                id, email);
+
 
         UserEntity user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No user found with email: " + email));
 
 
-        PaymentEntity payment = paymentRepository.findByIdAndOrderUserId(
-                        id, user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "No payment found with id: " + id));
+        PaymentEntity initialPayment = paymentRepository.findByIdAndOrderUserId(id, user.getId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "No payment found with id: " + id));
+
+
+        Long orderId = initialPayment.getOrder().getId();
+
+
+        OrderEntity order = orderRepository.findByIdAndUserIdForUpdate(orderId, user.getId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "No order found with id: " + orderId));
+
+
+        PaymentEntity payment =
+                paymentRepository.findByIdAndOrderUserIdForUpdate(id, user.getId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "No payment found with id: " + id));
+
+
+        if (!payment.getOrder().getId().equals(order.getId())) {
+
+            throw new PaymentRefundException(
+                    "Payment does not belong to the requested order.");
+        }
 
 
         if (payment.getStatus() != PaymentStatus.SUCCESS) {
@@ -354,8 +383,6 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
 
-        OrderEntity order = payment.getOrder();
-
         if (order.getStatus() != OrderStatus.CONFIRMED) {
 
             throw new PaymentRefundException(
@@ -365,8 +392,8 @@ public class PaymentServiceImpl implements PaymentService {
 
 
         log.debug("Processing payment refund through gateway. Payment ID: {}, Order ID: {}",
-                payment.getId(),
-                order.getId());
+                payment.getId(), order.getId());
+
 
         PaymentGatewayResponse gatewayResponse =
                 paymentGateway.refundPayment(payment);
@@ -374,7 +401,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (gatewayResponse.getStatus() != PaymentStatus.REFUNDED) {
 
-            log.warn("Payment refund failed at gateway. Payment ID: {}, Order ID: {}, Gateway Status: {}",
+            log.debug("Payment refund failed at gateway. Payment ID: {}, Order ID: {}, Gateway Status: {}",
                     payment.getId(),
                     order.getId(),
                     gatewayResponse.getStatus());
@@ -384,38 +411,32 @@ public class PaymentServiceImpl implements PaymentService {
                             + gatewayResponse.getStatus());
         }
 
-
         payment.setStatus(PaymentStatus.REFUNDED);
 
         payment.setRefundReference(
                 gatewayResponse.getTransactionReference());
 
-
         order.setStatus(OrderStatus.REFUNDED);
-
 
         List<OrderItemEntity> orderItems =
                 order.getOrderItems()
                         .stream()
-                        .sorted(
-                                Comparator.comparing(
-                                        item -> item
-                                                .getProduct()
-                                                .getId())
-                        )
+                        .sorted(Comparator.comparing(
+                                item -> item
+                                        .getProduct()
+                                        .getId()))
                         .toList();
+
 
         for (OrderItemEntity orderItem : orderItems) {
 
-            Long productId = orderItem
-                    .getProduct()
-                    .getId();
+            Long productId = orderItem.getProduct().getId();
 
             Integer quantity = orderItem.getQuantity();
 
+
             log.debug("Releasing inventory for refunded order. Product ID: {}, Quantity: {}",
-                    productId,
-                    quantity);
+                    productId, quantity);
 
             inventoryService.releaseReservedStock(productId, quantity);
         }
@@ -431,7 +452,6 @@ public class PaymentServiceImpl implements PaymentService {
                 updatedPayment.getRefundReference());
 
         return paymentMapper.toPaymentResponseDTO(updatedPayment);
-
     }
 
 
