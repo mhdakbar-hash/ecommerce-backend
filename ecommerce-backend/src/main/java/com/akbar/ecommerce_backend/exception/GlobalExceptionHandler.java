@@ -70,7 +70,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex){
 
-        log.warn("Resource not found: {}", ex.getMessage());
+        log.warn("Request failed because the requested resource was not found.");
 
         ErrorResponse response = new ErrorResponse();
 
@@ -299,8 +299,7 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException exception) {
 
 
-        log.warn("Request body could not be parsed: {}",
-                exception.getMessage());
+        log.warn("Request body could not be parsed due to invalid request format.");
 
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -427,6 +426,8 @@ public class GlobalExceptionHandler {
 
     public ResponseEntity<ErrorResponse> handleInvalidCredentials(Exception ex) {
 
+        log.warn("Authentication failed due to invalid credentials or account status.");
+
         ErrorResponse errorResponse = new ErrorResponse(
                 HttpStatus.UNAUTHORIZED.value(),
                 "Invalid email or password.",
@@ -485,7 +486,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleCannotAcquireLockException(
             CannotAcquireLockException exception) {
 
-        log.warn("Payment request could not acquire database lock due to concurrent operation.");
+        log.warn("Request could not acquire database lock due to a concurrent operation.");
 
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.CONFLICT.value(),
