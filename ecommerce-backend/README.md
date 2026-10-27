@@ -2,7 +2,6 @@
 
 A production-ready-designed e-commerce backend built with **Java 17, Spring Boot, Spring Security, JWT, MySQL, Redis, and Docker.** The project focuses on secure authentication, product and category management, concurrency-aware inventory reservation, order lifecycle management, mock payment processing, Redis caching, and API rate limiting.
 
-
 ## Table of Contents
 
 - [Overview](#overview)
@@ -11,10 +10,10 @@ A production-ready-designed e-commerce backend built with **Java 17, Spring Boot
 - [Architecture and Project Structure](#architecture-and-project-structure)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
-    - [1. Clone the Repository](#1-clone-the-repository)
-    - [2. Configure Environment Variables](#2-configure-environment-variables)
-    - [3. Run with Docker Compose](#3-run-with-docker-compose)
-    - [4. Run Locally from IntelliJ IDEA](#4-run-locally-from-intellij-idea)
+  - [1. Clone the Repository](#1-clone-the-repository)
+  - [2. Configure Environment Variables](#2-configure-environment-variables)
+  - [3. Run with Docker Compose](#3-run-with-docker-compose)
+  - [4. Run Locally from IntelliJ IDEA](#4-run-locally-from-intellij-idea)
 - [API Documentation](#api-documentation)
 - [Mock Payment Gateway](#mock-payment-gateway)
 - [Security and Configuration Notes](#security-and-configuration-notes)
@@ -30,15 +29,14 @@ Special attention has been given to concurrency and race-condition handling in i
 
 The project is built for realistic backend development and workflow testing. Its payment integration uses a mock gateway rather than a real payment provider, and production deployment readiness still depends on environment-specific security configuration, integration testing, monitoring, and operational validation.
 
-
 The application supports the main shopping lifecycle:
 
 **User authentication → Product discovery → Cart management → Order creation → Inventory reservation → Payment processing**
 
-
 ## Features
 
 ### Authentication and User Management
+
 - User registration and user management.
 - Password-based authentication.
 - JWT access tokens and refresh tokens.
@@ -48,6 +46,7 @@ The application supports the main shopping lifecycle:
 - User soft deletion and restoration.
 
 ### Product and Category Management
+
 - Create, retrieve, update, and manage products and categories.
 - Soft deletion and restoration.
 - Prevent category deletion when it is still in use.
@@ -55,6 +54,7 @@ The application supports the main shopping lifecycle:
 - Cache eviction when relevant data changes.
 
 ### Inventory Management
+
 - Inventory creation and updates.
 - Direct inventory updates and a separate add-stock operation.
 - Inventory reservation during order creation.
@@ -62,6 +62,7 @@ The application supports the main shopping lifecycle:
 - Concurrency-aware inventory operations using database locking and transactional boundaries to reduce race conditions during simultaneous stock updates and reservations.
 
 ### Cart and Order Management
+
 - Add eligible products to a cart.
 - Only active products can be added to the cart.
 - Stock validation and reservation are handled by the order workflow rather than cart addition.
@@ -70,6 +71,7 @@ The application supports the main shopping lifecycle:
 - Cancel eligible pending orders and release their reserved inventory.
 
 ### Payment Management
+
 - Mock payment gateway with deterministic success and failure outcomes.
 - Payment retry using the existing payment record.
 - Payment and order status management.
@@ -77,8 +79,8 @@ The application supports the main shopping lifecycle:
 - Failed payments do not automatically cancel orders, allowing a customer to retry.
 - Careful handling of repeated payment operations, retries, and refunds to maintain consistent payment and order state transitions.
 
-
 ### Performance and API Protection
+
 - Redis-based product and category caching.
 - Redis-based login rate limiting.
 - Configurable rate-limit thresholds and time windows.
@@ -142,6 +144,7 @@ ecommerce-backend/
 ## Prerequisites
 
 ### For local development
+
 - Java 17
 - IntelliJ IDEA or another Java IDE
 - Maven, or the Maven Wrapper included in the repository
@@ -149,6 +152,7 @@ ecommerce-backend/
 - Redis
 
 ### For Docker Compose
+
 - Docker Desktop installed and running on Windows, macOS, or Linux
 - Docker Compose available through Docker Desktop
 
@@ -171,15 +175,21 @@ The application reads database credentials and the JWT signing secret from envir
 
 The following values are **illustrative local-development examples only**. Replace them with your own values and never use these example credentials in production.
 
-| Variable                     | Purpose                                          | Example                                            |
-|------------------------------|--------------------------------------------------|----------------------------------------------------|
-| `ECOMMERCE_DB_URL`           | JDBC connection URL                              | `jdbc:mysql://localhost:3306/ecommerce_backend_db` |
-| `ECOMMERCE_DB_USERNAME`      | Database username                                | `root`                                             |
-| `ECOMMERCE_DB_PASSWORD`      | Database password                                | `YOUR_PASSWORD`                                    |
-| `ECOMMERCE_JWT_SECRET`       | JWT signing secret                               | A long, random, Base64-encoded secret              |
-| `REDIS_HOST`                 | Redis hostname                                   | `localhost`                                        |
-| `REDIS_PORT`                 | Redis port                                       | `6379`                                             |
-| `DOCKER_MYSQL_ROOT_PASSWORD` | Root password for the Docker-only MySQL instance | A new local development password                   |
+| Variable                       | Purpose                                                              | Example                                            |
+|--------------------------------|----------------------------------------------------------------------|----------------------------------------------------|
+| `ECOMMERCE_DB_URL`             | JDBC connection URL                                                  | `jdbc:mysql://localhost:3306/ecommerce_backend_db` |
+| `ECOMMERCE_DB_USERNAME`        | Database username                                                    | `root`                                             |
+| `ECOMMERCE_DB_PASSWORD`        | Database password                                                    | `YOUR_PASSWORD`                                    |
+| `ECOMMERCE_JWT_SECRET`         | JWT signing secret                                                   | A long, random, Base64-encoded secret              |
+| `REDIS_HOST`                   | Redis hostname                                                       | `localhost`                                        |
+| `REDIS_PORT`                   | Redis port                                                           | `6379`                                             |
+| `DOCKER_MYSQL_ROOT_PASSWORD`   | Root password for the Docker-only MySQL instance                     | A new local development password                   |
+| `ADMIN_BOOTSTRAP_ENABLED`      | Enables creation of the initial admin account on application startup | `false`                                            |
+| `ADMIN_BOOTSTRAP_FIRST_NAME`   | Initial admin's first name                                           | `Admin`                                            |
+| `ADMIN_BOOTSTRAP_LAST_NAME`    | Initial admin's last name                                            | `Account`                                          |
+| `ADMIN_BOOTSTRAP_EMAIL`        | Initial admin's email address                                        | `admin@gmail.com`                                  |
+| `ADMIN_BOOTSTRAP_PASSWORD`     | Initial admin's password                                             | `YOUR_STRONG_PASSWORD`                             |
+| `ADMIN_BOOTSTRAP_PHONE_NUMBER` | Initial admin's 10-digit phone number                                | `9876543210`                                       |
 
 **Important:** `ECOMMERCE_DB_URL` and `ECOMMERCE_DB_PASSWORD` are used for a local run. The Docker Compose setup uses `DOCKER_MYSQL_ROOT_PASSWORD` and connects the application to a separate database named `ecommerce_backend_docker`.
 
@@ -234,7 +244,30 @@ $env:ECOMMERCE_JWT_SECRET = "<your-long-random-secret>"
 
 Use your own values. The JWT secret should be long, random, and kept private.
 
-#### Step 3: Build and start the services
+#### Step 3: (Optional) Configure the initial admin account
+
+If you want Docker Compose to create the initial administrator account, set the following variables in the same PowerShell session before starting the services:
+
+```powershell
+$env:ADMIN_BOOTSTRAP_ENABLED = "true"
+$env:ADMIN_BOOTSTRAP_FIRST_NAME = "Admin"
+$env:ADMIN_BOOTSTRAP_LAST_NAME = "Account"
+$env:ADMIN_BOOTSTRAP_EMAIL = "admin@gmail.com"
+$env:ADMIN_BOOTSTRAP_PHONE_NUMBER = "9876543210"
+$env:ADMIN_BOOTSTRAP_PASSWORD = "<your-new-admin-password>"
+```
+
+Replace the example name, email, phone number, and password with your own values. The password is entered through a secure PowerShell prompt rather than being written directly into the command.
+
+When `ADMIN_BOOTSTRAP_ENABLED` is `true`:
+
+- The application creates an active admin account if no admin account exists.
+- If an admin account already exists, bootstrap is skipped; another admin account is not created.
+- If the configured email already belongs to an existing user but no admin exists, bootstrap fails rather than automatically promoting that user.
+
+The setting defaults to `false`. After the initial admin account has been created, set `ADMIN_BOOTSTRAP_ENABLED` to `false` before restarting the application unless you deliberately need bootstrap enabled again.
+
+#### Step 4: Build and start the services
 
 ```powershell
 docker compose up -d --build
@@ -242,7 +275,7 @@ docker compose up -d --build
 
 The first build may take several minutes because Docker downloads base images and builds the application image.
 
-#### Step 4: Check the service status
+#### Step 5: Check the service status
 
 ```powershell
 docker compose ps
@@ -250,7 +283,7 @@ docker compose ps
 
 Wait until MySQL and Redis report healthy and the application is running.
 
-#### Step 5: View application logs
+#### Step 6: View application logs
 
 ```powershell
 docker compose logs -f app
@@ -258,13 +291,13 @@ docker compose logs -f app
 
 Press `Ctrl+C` to stop following the logs. This does not stop the containers.
 
-#### Step 6: Open Swagger UI
+#### Step 7: Open Swagger UI
 
 Visit:
 
-**http://localhost:8080/swagger-ui/index.html#/**
+**[http://localhost:8080/swagger-ui/index.html#/](http://localhost:8080/swagger-ui/index.html#/)**
 
-#### Step 7: Stop the services
+#### Step 8: Stop the services
 
 ```powershell
 docker compose down
@@ -304,9 +337,10 @@ Swagger UI provides interactive API documentation and allows you to inspect and 
 
 When the application is running locally, open:
 
-**http://localhost:8080/swagger-ui/index.html#/**
+**[http://localhost:8080/swagger-ui/index.html#/](http://localhost:8080/swagger-ui/index.html#/)**
 
 Use Swagger to:
+
 - Explore the available endpoints and request schemas.
 - Register a user and authenticate.
 - Inspect response codes and response bodies.
@@ -395,6 +429,7 @@ Stop the other application using that port, or adjust the host port mapping in `
 ## Future Improvements
 
 Potential areas for further development include:
+
 - Real Payment Gateway Integration: Replace the mock payment gateway with a provider such as Razorpay or Stripe.
 - Automated CI/CD Pipeline: Automate build verification, test execution, and deployment workflows.
 - API Versioning and Backward Compatibility: Introduce a versioning strategy to support future API changes without disrupting existing clients.
